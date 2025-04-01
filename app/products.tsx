@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 5,
     right: 6,
     width: 40,
     height: 40,
