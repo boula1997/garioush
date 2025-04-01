@@ -4,18 +4,20 @@ import { ThemedView } from '@/components/ThemedView';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons'; // Added MaterialCommunityIcons
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
 
   const services = [
-    { name: 'Oils', icon: 'tint', iconSet: FontAwesome },
-    { name: 'Tires', icon: 'tire', iconSet: MaterialCommunityIcons }, // Changed to tire icon
-    { name: 'Batteries', icon: 'bolt', iconSet: FontAwesome },
-    { name: 'Spare Parts', icon: 'cog', iconSet: FontAwesome },
-    { name: 'Maintenance', icon: 'wrench', iconSet: FontAwesome },
-    { name: 'Body Shop', icon: 'car', iconSet: FontAwesome },
+    { name: 'Oils', icon: 'tint', iconSet: FontAwesome, category: 'oils' },
+    { name: 'Tires', icon: 'tire', iconSet: MaterialCommunityIcons, category: 'tires' },
+    { name: 'Batteries', icon: 'bolt', iconSet: FontAwesome, category: 'batteries' },
+    { name: 'Spare Parts', icon: 'cog', iconSet: FontAwesome, category: 'spare-parts' },
+    { name: 'Maintenance', icon: 'wrench', iconSet: FontAwesome, category: 'maintenance' },
+    { name: 'Body Shop', icon: 'car', iconSet: FontAwesome, category: 'body-shop' },
   ];
 
   return (
@@ -40,7 +42,7 @@ export default function HomeScreen() {
                   borderColor: themeColors.border,
                 }
               ]}
-              onPress={() => console.log(`${service.name} pressed`)}
+              onPress={() => router.push(`/products?category=${service.category}`)}
             >
               <IconComponent 
                 name={service.icon} 
