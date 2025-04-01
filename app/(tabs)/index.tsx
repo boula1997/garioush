@@ -1,74 +1,116 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons'; // Added MaterialCommunityIcons
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme();
+  const themeColors = Colors[colorScheme ?? 'light'];
+
+  const services = [
+    { name: 'Oils', icon: 'tint', iconSet: FontAwesome },
+    { name: 'Tires', icon: 'tire', iconSet: MaterialCommunityIcons }, // Changed to tire icon
+    { name: 'Batteries', icon: 'bolt', iconSet: FontAwesome },
+    { name: 'Spare Parts', icon: 'cog', iconSet: FontAwesome },
+    { name: 'Maintenance', icon: 'wrench', iconSet: FontAwesome },
+    { name: 'Body Shop', icon: 'car', iconSet: FontAwesome },
+  ];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView 
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* <ThemedView style={styles.header}>
+        <ThemedText type="title" style={styles.headerText}>Our Services</ThemedText>
+      </ThemedView> */}
+
+      <View style={styles.gridContainer}>
+        {services.map((service, index) => {
+          const IconComponent = service.iconSet;
+          return (
+            <TouchableOpacity 
+              key={index}
+              style={[
+                styles.serviceCard, 
+                { 
+                  backgroundColor: themeColors.cardBackground,
+                  borderColor: themeColors.border,
+                }
+              ]}
+              onPress={() => console.log(`${service.name} pressed`)}
+            >
+              <IconComponent 
+                name={service.icon} 
+                size={40} 
+                color={themeColors.tint} 
+                style={styles.icon}
+              />
+              <ThemedText style={styles.serviceText}>{service.name}</ThemedText>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* <ThemedView style={[
+        styles.promoBanner,
+        { backgroundColor: themeColors.tint }
+      ]}>
+        <ThemedText style={styles.promoText}>Special Offers This Week!</ThemedText>
+      </ThemedView> */}
+    </ScrollView>
   );
 }
 
+// ... (keep the same StyleSheet as before)
+
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    paddingTop:100,
+    padding: 16,
+    paddingBottom: 50,
   },
-  stepContainer: {
-    gap: 8,
+  header: {
+    marginBottom: 24,
+  },
+  headerText: {
+    fontSize: 28,
+    fontWeight: '800',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  serviceCard: {
+    width: '45%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 8,
+  },
+  icon: {
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  serviceText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  promoBanner: {
+    marginTop: 32,
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  promoText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
