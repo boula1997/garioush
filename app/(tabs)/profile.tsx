@@ -20,17 +20,17 @@ export default function ProfileScreen({ navigation }) {
       
       {/* Profile Options */}
       <View style={styles.menuContainer}>
-      <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MyProfile')}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyProfile')}>
           <MaterialIcons name="person" size={24} color={colors.tint} />
           <Text style={[styles.menuText, { color: colors.text }]}>My Profile</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MyOrders')}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyOrders')}>
           <MaterialIcons name="shopping-cart" size={24} color={colors.tint} />
           <Text style={[styles.menuText, { color: colors.text }]}>My Orders</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MyCarInfo')}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyCarInfo')}>
           <MaterialIcons name="directions-car" size={24} color={colors.tint} />
           <Text style={[styles.menuText, { color: colors.text }]}>My Car Info</Text>
         </TouchableOpacity>
