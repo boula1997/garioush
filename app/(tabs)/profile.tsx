@@ -35,7 +35,7 @@ export default function ProfileScreen({ navigation }) {
           <Text style={[styles.menuText, { color: colors.text }]}>My Car Info</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EditCarInfo')}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/EditCarInfo')}>
           <MaterialIcons name="edit" size={24} color={colors.tint} />
           <Text style={[styles.menuText, { color: colors.text }]}>Edit My Car Info</Text>
         </TouchableOpacity>
