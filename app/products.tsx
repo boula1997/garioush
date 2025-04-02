@@ -15,6 +15,7 @@ import { FontAwesome, MaterialIcons, MaterialCommunityIcons } from '@expo/vector
 import { useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useRouter } from 'expo-router';
 
 // Mock data with filterable attributes
 const PRODUCTS = {
@@ -65,6 +66,7 @@ const FILTER_OPTIONS = {
 };
 
 export default function ProductsScreen() {
+  const router = useRouter();
   const { category } = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -218,12 +220,13 @@ export default function ProductsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={[styles.productCard, { backgroundColor: colors.cardBackground }]}>
+          <TouchableOpacity onPress={() => router.push(`/product?id=${item.id}`)}>
             <Image 
               source={{ uri: item.image }} 
               style={styles.productImage} 
               resizeMode="contain"
             />
-            
+            </TouchableOpacity>
             <View style={styles.productInfo}>
               <Text style={[styles.productName, { color: colors.text }]}>
                 {item.name}
