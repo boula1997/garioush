@@ -8,8 +8,9 @@ export const Colors = {
     text: '#000000',
     shadow: 'rgba(0,0,0,0.1)',
     border: '#8B0000',
+    cardBackground:"rgba(255, 245, 245, 0.48)",
   },
- 
+
   dark: {
     background: '#FFFFFF',
     headerBackground: '#FFFFFF',
