@@ -21,12 +21,11 @@ export default function LoginScreen() {
   });
 
   const handleLogin = () => {
-    // Show survey instead of navigating directly
     setShowSurvey(true);
   };
 
   const handleSurveySubmit = () => {
-    router.replace('/home');
+    router.replace('/(tabs)/index');
   };
 
   if (showSurvey) {
@@ -38,15 +37,16 @@ export default function LoginScreen() {
             <ThemedText style={styles.subtitle}>Please assess your vehicle</ThemedText>
           </View>
 
-          {/* Survey Questions (same as before) */}
+          {/* Exterior Condition */}
           <View style={styles.surveySection}>
-            <ThemedText style={styles.surveyQuestion}>Exterior Condition</ThemedText>
+            <ThemedText style={[styles.surveyQuestion, { color: themeColors.text }]}>Exterior Condition</ThemedText>
             <View style={styles.optionRow}>
               {['Excellent', 'Good', 'Fair', 'Poor'].map((option) => (
                 <TouchableOpacity
                   key={option}
                   style={[
                     styles.optionButton,
+                    { borderColor: themeColors.border },
                     surveyData.exterior === option && {
                       backgroundColor: themeColors.tint,
                       borderColor: themeColors.tint
@@ -56,6 +56,7 @@ export default function LoginScreen() {
                 >
                   <ThemedText style={[
                     styles.optionText,
+                    { color: themeColors.text },
                     surveyData.exterior === option && { color: themeColors.buttonText }
                   ]}>
                     {option}
@@ -65,7 +66,63 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          {/* Interior and Mechanical sections same as above */}
+          {/* Interior Condition */}
+          <View style={styles.surveySection}>
+            <ThemedText style={[styles.surveyQuestion, { color: themeColors.text }]}>Interior Condition</ThemedText>
+            <View style={styles.optionRow}>
+              {['Excellent', 'Good', 'Fair', 'Poor'].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.optionButton,
+                    { borderColor: themeColors.border },
+                    surveyData.interior === option && {
+                      backgroundColor: themeColors.tint,
+                      borderColor: themeColors.tint
+                    }
+                  ]}
+                  onPress={() => setSurveyData({...surveyData, interior: option})}
+                >
+                  <ThemedText style={[
+                    styles.optionText,
+                    { color: themeColors.text },
+                    surveyData.interior === option && { color: themeColors.buttonText }
+                  ]}>
+                    {option}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Mechanical Issues */}
+          <View style={styles.surveySection}>
+            <ThemedText style={[styles.surveyQuestion, { color: themeColors.text }]}>Mechanical Issues</ThemedText>
+            <View style={styles.optionRow}>
+              {['None', 'Minor', 'Moderate', 'Severe'].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.optionButton,
+                    { borderColor: themeColors.border },
+                    surveyData.mechanical === option && {
+                      backgroundColor: themeColors.tint,
+                      borderColor: themeColors.tint
+                    }
+                  ]}
+                  onPress={() => setSurveyData({...surveyData, mechanical: option})}
+                >
+                  <ThemedText style={[
+                    styles.optionText,
+                    { color: themeColors.text },
+                    surveyData.mechanical === option && { color: themeColors.buttonText }
+                  ]}>
+                    {option}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
           <TouchableOpacity 
             style={[styles.button, { 
@@ -84,7 +141,7 @@ export default function LoginScreen() {
     );
   }
 
-  // Original login screen - STYLES REMAIN UNCHANGED from your version
+  // Original login screen remains completely unchanged
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={styles.header}>
@@ -158,7 +215,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  // YOUR ORIGINAL STYLES - COMPLETELY UNCHANGED
+  // Your original styles remain completely unchanged
   container: {
     flex: 1,
     padding: 20,
@@ -223,7 +280,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   
-  // NEW SURVEY-ONLY STYLES (added at the bottom)
+  // New survey-only styles
   surveyContainer: {
     flexGrow: 1,
     padding: 20,
@@ -235,7 +292,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 15,
-    color: '#000',
   },
   optionRow: {
     flexDirection: 'row',
@@ -247,12 +303,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#555',
     alignItems: 'center',
     marginBottom: 10,
   },
   optionText: {
     fontSize: 14,
-    // color: '#fff',
   },
 });
