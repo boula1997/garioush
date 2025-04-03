@@ -10,6 +10,7 @@ export const Colors = {
     border: '#8B0000',
     cardBackground:"rgba(255, 245, 245, 0.48)",
     buttonText:"#ffffff"
+    
   },
 
   dark: {
