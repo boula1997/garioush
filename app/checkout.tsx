@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
 export default function CheckoutScreen() {
   const router = useRouter();
@@ -11,15 +12,22 @@ export default function CheckoutScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { cart } = useLocalSearchParams();
 
-  // Parse the cart, ensure it's a valid string
+  // Parse the cart
   const parsedCart = Array.isArray(cart) ? cart[0] : cart;
   const parsedCartData = JSON.parse(parsedCart || '[]');
 
   const [address, setAddress] = useState('');
   const [mobile, setMobile] = useState('');
-  const [isCreditCardSelected, setIsCreditCardSelected] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState('credit');
 
-  // Calculate the total amount
+  const paymentMethods = [
+    { id: 'credit', name: 'Credit Card', icon: 'credit-card', iconType: FontAwesome },
+    { id: 'paypal', name: 'PayPal', icon: 'paypal', iconType: FontAwesome },
+    { id: 'apple', name: 'Apple Pay', icon: 'apple', iconType: FontAwesome },
+    { id: 'google', name: 'Google Pay', icon: 'google-wallet', iconType: FontAwesome },
+    { id: 'cash', name: 'Cash on Delivery', icon: 'money', iconType: FontAwesome },
+  ];
+
   const calculateTotal = () => {
     return parsedCartData.reduce(
       (total, item) => total + (parseFloat(item.price) * (item.quantity ?? 1)),
@@ -29,52 +37,86 @@ export default function CheckoutScreen() {
 
   const handleCheckout = () => {
     if (address && mobile) {
-      console.log('Proceed to payment');
+      console.log('Proceeding to payment with method:', selectedPayment);
+      router.push('/payment-confirmation');
     } else {
-      console.log('Please fill out all fields!');
+      alert('Please fill out all fields!');
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text }]}>Checkout</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
         Please provide your shipping details and select a payment method.
       </Text>
 
-      {/* Address Input */}
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
-        placeholder="Enter your address"
-        placeholderTextColor={colors.textSecondary}
-        value={address}
-        onChangeText={setAddress}
-      />
+      {/* Shipping Details Section */}
+      <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+        <Text style={[styles.sectionTitle, { color: colors.tint }]}>
+          <MaterialIcons name="local-shipping" size={20} /> Shipping Details
+        </Text>
+        
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
+          placeholder="Enter your address"
+          placeholderTextColor={colors.textSecondary}
+          value={address}
+          onChangeText={setAddress}
+        />
 
-      {/* Mobile Input */}
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
-        placeholder="Enter your mobile number"
-        placeholderTextColor={colors.textSecondary}
-        value={mobile}
-        onChangeText={setMobile}
-        keyboardType="phone-pad"
-      />
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
+          placeholder="Enter your mobile number"
+          placeholderTextColor={colors.textSecondary}
+          value={mobile}
+          onChangeText={setMobile}
+          keyboardType="phone-pad"
+        />
+      </View>
 
-      {/* Custom Checkbox for Credit Card */}
-      <TouchableOpacity
-        style={[styles.checkboxContainer, { backgroundColor: isCreditCardSelected ? colors.tint : colors.cardBackground }]}
-        onPress={() => setIsCreditCardSelected(!isCreditCardSelected)}
-      >
-        <View style={styles.checkbox}>
-          {isCreditCardSelected && <View style={styles.checked} />}
-        </View>
-        <Text style={[styles.checkboxText, { color: colors.text }]}>Credit Card</Text>
-      </TouchableOpacity>
+      {/* Payment Methods Section */}
+      <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+        <Text style={[styles.sectionTitle, { color: colors.tint }]}>
+          <MaterialIcons name="payment" size={20} /> Payment Method
+        </Text>
+        
+        {paymentMethods.map((method) => (
+          <TouchableOpacity
+            key={method.id}
+            style={[
+              styles.paymentMethod,
+              { 
+                backgroundColor: selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
+                borderColor: selectedPayment === method.id ? colors.tint : colors.border 
+              }
+            ]}
+            onPress={() => setSelectedPayment(method.id)}
+          >
+            <method.iconType 
+              name={method.icon} 
+              size={24} 
+              color={selectedPayment === method.id ? colors.tint : colors.text} 
+            />
+            <Text style={[
+              styles.paymentText, 
+              { color: selectedPayment === method.id ? colors.tint : colors.text }
+            ]}>
+              {method.name}
+            </Text>
+            {selectedPayment === method.id && (
+              <FontAwesome name="check-circle" size={20} color={colors.tint} style={styles.checkIcon} />
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
 
-      {/* Order Summary */}
-      <View style={styles.orderSummaryContainer}>
-        <Text style={[styles.summaryTitle, { color: colors.text }]}>Order Summary</Text>
+      {/* Order Summary Section */}
+      <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+        <Text style={[styles.sectionTitle, { color: colors.tint }]}>
+          <MaterialIcons name="receipt" size={20} /> Order Summary
+        </Text>
+        
         {parsedCartData.map((item) => (
           <View key={item.id} style={styles.summaryItem}>
             <Text style={[styles.summaryText, { color: colors.text }]}>{item.title}</Text>
@@ -83,20 +125,24 @@ export default function CheckoutScreen() {
             </Text>
           </View>
         ))}
-        <View style={styles.divider} />
-        <Text style={[styles.totalText, { color: colors.text }]}>
-          Total: <Text style={{ color: colors.tint }}>${calculateTotal()}</Text>
-        </Text>
+        
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        
+        <View style={styles.totalContainer}>
+          <Text style={[styles.totalLabel, { color: colors.text }]}>Total:</Text>
+          <Text style={[styles.totalAmount, { color: colors.tint }]}>${calculateTotal()}</Text>
+        </View>
       </View>
 
-      {/* Proceed to Payment Button */}
+      {/* Checkout Button */}
       <TouchableOpacity
         style={[styles.confirmButton, { backgroundColor: colors.tint }]}
         onPress={handleCheckout}
+        disabled={!address || !mobile}
       >
-        <Text style={styles.buttonText}>Proceed to Payment</Text>
+        <Text style={styles.buttonText}>Complete Purchase</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -106,57 +152,56 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   description: {
     fontSize: 16,
+    marginBottom: 24,
+  },
+  section: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 16,
   },
   input: {
-    height: 40,
-    paddingHorizontal: 12,
+    height: 50,
+    paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 16,
     fontSize: 16,
   },
-  checkboxContainer: {
+  paymentMethod: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    padding: 8,
+    padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checked: {
-    width: 12,
-    height: 12,
-    backgroundColor: 'green', // or your tint color
-    borderRadius: 2,
-  },
-  checkboxText: {
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  orderSummaryContainer: {
-    marginTop: 24,
-  },
-  summaryTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
     marginBottom: 12,
   },
+  paymentText: {
+    fontSize: 16,
+    marginLeft: 12,
+    flex: 1,
+  },
+  checkIcon: {
+    marginLeft: 'auto',
+  },
   summaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
   summaryText: {
@@ -164,22 +209,30 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#ddd',
-    marginVertical: 8,
+    marginVertical: 12,
   },
-  totalText: {
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
   },
   confirmButton: {
-    padding: 12,
+    padding: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 8,
+    marginBottom: 32,
   },
   buttonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });
