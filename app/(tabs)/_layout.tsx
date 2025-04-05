@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Platform, View, SafeAreaView, StyleSheet, Image } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { HapticTab } from '@/components/HapticTab';
@@ -8,20 +8,48 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
-
-  // Fake login state (Change manually to test)
+  const [sound, setSound] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Handle profile tab press
-  const handleProfileTabPress = (e) => {
+  // Load the sound effect
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
+  const playSound = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('@/assets/car2.mp3')
+      );
+      setSound(sound);
+      await sound.playAsync();
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
+  };
+
+  const handleTabPress = async (routeName) => {
+    await playSound();
+    return { routeName };
+  };
+
+  const handleProfileTabPress = async (e) => {
     if (!isLoggedIn) {
-      e.preventDefault(); // Prevent default tab behavior
-      router.push('/login'); // Navigate to login screen
+      e.preventDefault();
+      await playSound();
+      router.push('/login');
+    } else {
+      await playSound();
     }
   };
 
@@ -61,6 +89,12 @@ export default function TabLayout() {
             title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
+          listeners={({ navigation }) => ({
+            tabPress: async (e) => {
+              await playSound();
+              navigation.navigate('index');
+            },
+          })}
         />
 
         <Tabs.Screen
@@ -69,6 +103,12 @@ export default function TabLayout() {
             title: 'Cart',
             tabBarIcon: ({ color }) => <FontAwesome name="shopping-cart" size={24} color={color} />,
           }}
+          listeners={({ navigation }) => ({
+            tabPress: async (e) => {
+              await playSound();
+              navigation.navigate('cart');
+            },
+          })}
         />
 
         <Tabs.Screen
@@ -77,6 +117,12 @@ export default function TabLayout() {
             title: 'Notifications',
             tabBarIcon: ({ color }) => <FontAwesome name="bell" size={24} color={color} />,
           }}
+          listeners={({ navigation }) => ({
+            tabPress: async (e) => {
+              await playSound();
+              navigation.navigate('notifications');
+            },
+          })}
         />
 
         <Tabs.Screen
@@ -86,18 +132,26 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) =>
               isLoggedIn ? (
                 <Image
-                  source={{ uri: 'https://via.placeholder.com/40' }} // Replace with actual avatar
+                  source={{ uri: 'https://via.placeholder.com/40' }}
                   style={styles.profileAvatar}
                 />
               ) : (
                 <FontAwesome name="user" size={24} color={color} />
               ),
           }}
-          listeners={{
-            tabPress: handleProfileTabPress,
-          }}
+          listeners={({ navigation }) => ({
+            tabPress: async (e) => {
+              if (!isLoggedIn) {
+                e.preventDefault();
+                await playSound();
+                router.push('/login');
+              } else {
+                await playSound();
+                navigation.navigate('profile');
+              }
+            },
+          })}
         />
-
       </Tabs>
     </SafeAreaView>
   );
