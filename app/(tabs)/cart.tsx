@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useRouter } from 'expo-router';
 
 const initialCart = [
   {
@@ -29,6 +30,7 @@ const initialCart = [
 ];
 
 export default function CartScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [cart, setCart] = useState(initialCart);
@@ -47,6 +49,10 @@ export default function CartScreen() {
 
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+  };
+  const handleCheckout = () => {
+    // Navigate to the checkout screen
+    router.push('/checkout');
   };
 
   return (
@@ -87,9 +93,13 @@ export default function CartScreen() {
         <Text style={[styles.totalText, { color: colors.text }]}>Subtotal: <Text style={{ color: colors.tint }}>${calculateTotal()}</Text></Text>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <Text style={[styles.totalText, { color: colors.text }]}>Total: <Text style={{ color: colors.tint }}>${calculateTotal()}</Text></Text>
-        <TouchableOpacity style={[styles.checkoutButton, { backgroundColor: colors.tint }]}>
-          <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={[styles.checkoutButton, { backgroundColor: colors.tint }]}
+  onPress={handleCheckout} // Add the handleCheckout function here
+>
+  <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+</TouchableOpacity>
+
       </View>
     </View>
   );
