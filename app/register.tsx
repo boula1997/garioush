@@ -12,12 +12,16 @@ export default function AuthScreen() {
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCarForm, setShowCarForm] = useState(false);
 
   // Auth state
   const [authData, setAuthData] = useState({
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: '',
+    username: '',
+    phone: '',
   });
 
   // Car registration state
@@ -52,6 +56,8 @@ export default function AuthScreen() {
     console.log('Car data:', carData);
     router.replace('/home');
   };
+
+  const isRegisterDisabled = false;
 
   if (showCarForm) {
     return (
@@ -157,6 +163,29 @@ export default function AuthScreen() {
         </View>
 
         <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+          <FontAwesome name="user" size={20} color={themeColors.tint} style={styles.icon} />
+          <TextInput
+            style={[styles.input, { color: themeColors.text }]}
+            placeholder="Username"
+            placeholderTextColor={themeColors.textSecondary}
+            value={authData.username}
+            onChangeText={(text) => setAuthData({ ...authData, username: text })}
+          />
+        </View>
+
+        <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+          <FontAwesome name="phone" size={20} color={themeColors.tint} style={styles.icon} />
+          <TextInput
+            style={[styles.input, { color: themeColors.text }]}
+            placeholder="Phone Number"
+            placeholderTextColor={themeColors.textSecondary}
+            keyboardType="phone-pad"
+            value={authData.phone}
+            onChangeText={(text) => setAuthData({ ...authData, phone: text })}
+          />
+        </View>
+
+        <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
           <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
@@ -178,15 +207,46 @@ export default function AuthScreen() {
           </TouchableOpacity>
         </View>
 
+        <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+          <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
+          <TextInput
+            style={[styles.input, { color: themeColors.text }]}
+            placeholder="Confirm Password"
+            placeholderTextColor={themeColors.textSecondary}
+            secureTextEntry={!showConfirmPassword}
+            value={authData.confirmPassword}
+            onChangeText={(text) => setAuthData({ ...authData, confirmPassword: text })}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <FontAwesome
+              name={showConfirmPassword ? 'eye' : 'eye-slash'}
+              size={20}
+              color={themeColors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity
           style={[styles.button, { backgroundColor: themeColors.tint }]}
           onPress={handleAuthSubmit}
-          disabled={!authData.email || !authData.password}
+          disabled={isRegisterDisabled}
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
             Register
           </ThemedText>
         </TouchableOpacity>
+
+        <View style={styles.createAccountContainer}>
+          <ThemedText style={{ color: themeColors.textSecondary }}>
+            Already have an account?{' '}
+          </ThemedText>
+          <TouchableOpacity onPress={() => router.push('/login')}>
+            <ThemedText style={{ color: themeColors.tint, fontWeight: 'bold' }}>Login</ThemedText>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -207,7 +267,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 8,
-    color:"#fff",
+    color: "#fff",
   },
   subtitle: {
     fontSize: 16,
@@ -240,6 +300,10 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 10,
   },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
   button: {
     width: '100%',
     height: 50,
@@ -257,6 +321,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 10,
   },
+
   // New styles for car registration
   imagePicker: {
     width: '100%',
@@ -265,9 +330,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#555',
+    borderColor: '#8B0000',
   },
   carImage: {
     width: '100%',
@@ -275,11 +340,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   imagePlaceholder: {
+    backgroundColor:"#ffffff",
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageText: {
     marginTop: 10,
     fontSize: 16,
+    color:"#8B0000",
   },
 });
