@@ -52,7 +52,8 @@ export default function CartScreen() {
   };
   const handleCheckout = () => {
     // Navigate to the checkout screen
-    router.push('/checkout');
+    router.push(`/checkout?cart=${JSON.stringify(cart)}`);
+
   };
 
   return (
