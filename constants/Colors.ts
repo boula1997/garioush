@@ -9,7 +9,8 @@ export const Colors = {
     shadow: 'rgba(0,0,0,0.1)',
     border: '#8B0000',
     cardBackground:'rgba(255, 245, 245, 0.48)',
-    buttonText:"#ffffff"
+    buttonText:"#ffffff",
+    cardcheckBackground:"rgba(251, 245, 245, 0.38)",
     
   },
 

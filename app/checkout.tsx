@@ -20,11 +20,14 @@ export default function CheckoutScreen() {
   const [mobile, setMobile] = useState('');
   const [selectedPayment, setSelectedPayment] = useState('credit');
 
+  const [isShippingOpen, setIsShippingOpen] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+
   const paymentMethods = [
     { id: 'credit', name: 'Credit Card', icon: 'credit-card', iconType: FontAwesome },
-    { id: 'paypal', name: 'PayPal', icon: 'paypal', iconType: FontAwesome },
-    { id: 'apple', name: 'Apple Pay', icon: 'apple', iconType: FontAwesome },
-    { id: 'google', name: 'Google Pay', icon: 'google-wallet', iconType: FontAwesome },
+    // { id: 'paypal', name: 'PayPal', icon: 'paypal', iconType: FontAwesome },
+    // { id: 'apple', name: 'Apple Pay', icon: 'apple', iconType: FontAwesome },
+    // { id: 'google', name: 'Google Pay', icon: 'google-wallet', iconType: FontAwesome },
     { id: 'cash', name: 'Cash on Delivery', icon: 'money', iconType: FontAwesome },
   ];
 
@@ -46,83 +49,118 @@ export default function CheckoutScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Checkout</Text>
+      <Text style={[styles.title, { color: colors.tint }]}>Checkout</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
         Please provide your shipping details and select a payment method.
       </Text>
 
       {/* Shipping Details Section */}
-      <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-        <Text style={[styles.sectionTitle, { color: colors.tint }]}>
-          <MaterialIcons name="local-shipping" size={20} /> Shipping Details
-        </Text>
+      <View style={[styles.section, { borderColor: colors.border }]}>
+        <TouchableOpacity
+          onPress={() => setIsShippingOpen(!isShippingOpen)}
+          style={styles.toggleButton}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.tint }]}>
+            <MaterialIcons name="local-shipping" size={20} /> Shipping Details
+          </Text>
+          <MaterialIcons
+            name={isShippingOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+            size={24}
+            color={colors.text}
+          />
+        </TouchableOpacity>
         
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
-          placeholder="Enter your address"
-          placeholderTextColor={colors.textSecondary}
-          value={address}
-          onChangeText={setAddress}
-        />
+        {isShippingOpen && (
+          <View>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
+              placeholder="Enter your address"
+              placeholderTextColor={colors.textSecondary}
+              value={address}
+              onChangeText={setAddress}
+            />
 
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
-          placeholder="Enter your mobile number"
-          placeholderTextColor={colors.textSecondary}
-          value={mobile}
-          onChangeText={setMobile}
-          keyboardType="phone-pad"
-        />
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
+              placeholder="Enter your mobile number"
+              placeholderTextColor={colors.textSecondary}
+              value={mobile}
+              onChangeText={setMobile}
+              keyboardType="phone-pad"
+            />
+          </View>
+        )}
       </View>
 
       {/* Payment Methods Section */}
-      <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
-        <Text style={[styles.sectionTitle, { color: colors.tint }]}>
-          <MaterialIcons name="payment" size={20} /> Payment Method
-        </Text>
-        
-        {paymentMethods.map((method) => (
-          <TouchableOpacity
-            key={method.id}
-            style={[
-              styles.paymentMethod,
-              { 
-                backgroundColor: selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
-                borderColor: selectedPayment === method.id ? colors.tint : colors.border 
-              }
-            ]}
-            onPress={() => setSelectedPayment(method.id)}
-          >
-            <method.iconType 
-              name={method.icon} 
-              size={24} 
-              color={selectedPayment === method.id ? colors.tint : colors.text} 
-            />
-            <Text style={[
-              styles.paymentText, 
-              { color: selectedPayment === method.id ? colors.tint : colors.text }
-            ]}>
-              {method.name}
-            </Text>
-            {selectedPayment === method.id && (
-              <FontAwesome name="check-circle" size={20} color={colors.tint} style={styles.checkIcon} />
-            )}
-          </TouchableOpacity>
-        ))}
+      <View style={[styles.section, {borderColor: colors.border }]}>
+        <TouchableOpacity
+          onPress={() => setIsPaymentOpen(!isPaymentOpen)}
+          style={styles.toggleButton}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.tint }]}>
+            <MaterialIcons name="payment" size={20} /> Payment Method
+          </Text>
+          <MaterialIcons
+            name={isPaymentOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+            size={24}
+            color={colors.text}
+          />
+        </TouchableOpacity>
+
+        {isPaymentOpen && (
+          <View>
+            {paymentMethods.map((method) => (
+              <TouchableOpacity
+                key={method.id}
+                style={[styles.paymentMethod, { 
+                  backgroundColor: selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
+                  borderColor: selectedPayment === method.id ? colors.tint : colors.border 
+                }]}
+                onPress={() => setSelectedPayment(method.id)}
+              >
+                <method.iconType 
+                  name={method.icon} 
+                  size={24} 
+                  color={selectedPayment === method.id ? colors.tint : colors.text} 
+                />
+                <Text style={[styles.paymentText, { color: selectedPayment === method.id ? colors.tint : colors.text }]}>
+                  {method.name}
+                </Text>
+                {selectedPayment === method.id && (
+                  <FontAwesome name="check-circle" size={20} color={colors.tint} style={styles.checkIcon} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Order Summary Section */}
-      <View style={[styles.section, { backgroundColor: colors.cardBackground }]}>
+      <View style={[styles.section, {borderColor: colors.border}]}>
         <Text style={[styles.sectionTitle, { color: colors.tint }]}>
           <MaterialIcons name="receipt" size={20} /> Order Summary
         </Text>
         
         {parsedCartData.map((item) => (
-          <View key={item.id} style={styles.summaryItem}>
-            <Text style={[styles.summaryText, { color: colors.text }]}>{item.title}</Text>
-            <Text style={[styles.summaryText, { color: colors.text }]}>
-              {item.quantity} x ${item.price.toFixed(2)} = ${(item.quantity * parseFloat(item.price)).toFixed(2)}
-            </Text>
+          <View key={item.id} style={[styles.itemCard, { backgroundColor: colors.cardBackground }]} > 
+            {/* Item Image */}
+            <Image 
+              source={{ uri: item.image }} 
+              style={styles.itemImage} 
+            />
+            <View style={styles.itemDetails}>
+              <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
+              <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
+              <View style={styles.itemPriceContainer}>
+                <Text style={[styles.itemQuantity, { color: colors.text }]}>
+                  {item.quantity} x ${item.price.toFixed(2)}
+                </Text>
+                <Text style={[styles.itemTotalPrice, { color: colors.tint }]}>
+                  ${(item.quantity * parseFloat(item.price)).toFixed(2)}
+                </Text>
+              </View>
+            </View>
           </View>
         ))}
         
@@ -149,7 +187,7 @@ export default function CheckoutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 10,
   },
   title: {
     fontSize: 28,
@@ -163,17 +201,19 @@ const styles = StyleSheet.create({
   section: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 10,
+    borderWidth: 1,
+
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   input: {
     height: 50,
@@ -199,13 +239,43 @@ const styles = StyleSheet.create({
   checkIcon: {
     marginLeft: 'auto',
   },
-  summaryItem: {
+  itemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    // borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  itemDetails: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  itemSubtitle: {
+    fontSize: 14,
+    marginVertical: 4,
+  },
+  itemPriceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginTop: 8,
   },
-  summaryText: {
+  itemQuantity: {
     fontSize: 16,
+  },
+  itemTotalPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   divider: {
     height: 1,
