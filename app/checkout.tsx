@@ -25,9 +25,6 @@ export default function CheckoutScreen() {
 
   const paymentMethods = [
     { id: 'credit', name: 'Credit Card', icon: 'credit-card', iconType: FontAwesome },
-    // { id: 'paypal', name: 'PayPal', icon: 'paypal', iconType: FontAwesome },
-    // { id: 'apple', name: 'Apple Pay', icon: 'apple', iconType: FontAwesome },
-    // { id: 'google', name: 'Google Pay', icon: 'google-wallet', iconType: FontAwesome },
     { id: 'cash', name: 'Cash on Delivery', icon: 'money', iconType: FontAwesome },
   ];
 
@@ -41,7 +38,21 @@ export default function CheckoutScreen() {
   const handleCheckout = () => {
     if (address && mobile) {
       console.log('Proceeding to payment with method:', selectedPayment);
-      router.push('/payment-confirmation');
+      
+      // Pass the order details to the OrderDetails page
+      const orderDetails = {
+        cartItems: parsedCartData,
+        totalAmount: calculateTotal(),
+        address: address,
+        mobile: mobile,
+        paymentMethod: paymentMethods.find((method) => method.id === selectedPayment)?.name,
+      };
+
+      // Navigate to the OrderDetailsScreen and pass orderDetails
+      router.push({
+        pathname: '/OrderDetailsScreen',
+        params: { orderDetails },
+      });
     } else {
       alert('Please fill out all fields!');
     }
@@ -143,7 +154,7 @@ export default function CheckoutScreen() {
         </Text>
         
         {parsedCartData.map((item) => (
-          <View key={item.id} style={[styles.itemCard, { backgroundColor: colors.cardBackground }]} > 
+          <View key={item.id} style={[styles.itemCard, { backgroundColor: colors.cardBackground }]}> 
             {/* Item Image */}
             <Image 
               source={{ uri: item.image }} 
@@ -203,7 +214,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 10,
     borderWidth: 1,
-
   },
   sectionTitle: {
     fontSize: 18,
@@ -245,7 +255,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderRadius: 8,
-    // borderWidth: 1,
     borderColor: '#ddd',
   },
   itemImage: {
