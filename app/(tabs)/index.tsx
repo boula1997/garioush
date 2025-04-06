@@ -30,30 +30,32 @@ export default function HomeScreen() {
       </ThemedView> */}
 
       <View style={styles.gridContainer}>
-        {services.map((service, index) => {
-          const IconComponent = service.iconSet;
-          return (
-            <TouchableOpacity 
-              key={index}
-              style={[
-                styles.serviceCard, 
-                { 
-                  backgroundColor: themeColors.cardBackground,
-                  borderColor: themeColors.border,
-                }
-              ]}
-              onPress={() => router.push(`/products?category=${service.category}`)}
-            >
-              <IconComponent 
-                name={service.icon} 
-                size={40} 
-                color={themeColors.tint} 
-                style={styles.icon}
-              />
-              <ThemedText style={styles.serviceText}>{service.name}</ThemedText>
-            </TouchableOpacity>
-          );
-        })}
+      {services.map((service, index) => {
+  const IconComponent = service.iconSet;
+  return (
+    <TouchableOpacity 
+      key={index}
+      style={[
+        styles.serviceCard, 
+        { 
+          backgroundColor: themeColors.cardBackground,
+          borderColor: themeColors.border,
+        },
+        index !== 0 && styles.firstServiceCard // Apply extra styles to the first card
+      ]}
+      onPress={() => router.push(`/products?category=${service.category}`)}
+    >
+      <IconComponent 
+        name={service.icon} 
+        size={40} 
+        color={themeColors.tint} 
+        style={styles.icon}
+      />
+      <ThemedText style={styles.serviceText}>{service.name}</ThemedText>
+    </TouchableOpacity>
+  );
+})}
+
       </View>
 
       {/* <ThemedView style={[
@@ -95,6 +97,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     padding: 8,
+    
+  },
+  firstServiceCard:{
+paddingBottom:27,
   },
   icon: {
     marginBottom: 8,
@@ -103,6 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+   
   },
   promoBanner: {
     marginTop: 32,
