@@ -1,32 +1,46 @@
 import { StyleSheet, TouchableOpacity, View, ScrollView, Image } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Audio } from 'expo-av';
 import { useEffect, useState } from 'react';
 
 export default function SubCategoriesScreen() {
   const router = useRouter();
+  const { category } = useLocalSearchParams(); // category ID from query params
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
-  const [sound, setSound] = useState();
+  const [sound, setSound] = useState<any>();
+  const [subcategories, setSubcategories] = useState([]);
 
   useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
+    if (category) {
+      fetchSubcategories(category as string);
+    }
+  }, [category]);
+
+  const fetchSubcategories = async (categoryId: string) => {
+    try {
+      const response = await fetch(`https://yousab-tech.com/groshy/public/api/categorySubcategories?category_id=${categoryId}`);
+      const json = await response.json();
+      if (json.data) {
+        setSubcategories(json.data);
+      } else {
+        console.warn(json.data);
+      }
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+    }
+  };
+
+  useEffect(() => {
+    return sound ? () => sound.unloadAsync() : undefined;
   }, [sound]);
 
   const playCarSound = async () => {
     try {
-      const { sound } = await Audio.Sound.createAsync(
-        require('@/assets/car2.mp3')
-      );
+      const { sound } = await Audio.Sound.createAsync(require('@/assets/car2.mp3'));
       setSound(sound);
       await sound.playAsync();
     } catch (error) {
@@ -34,33 +48,24 @@ export default function SubCategoriesScreen() {
     }
   };
 
-  const handleSubcategoryPress = async (category: string) => {
-    // await playCarSound();
-    router.push(`/products?category=${category}`);
+  const handleSubcategoryPress = async (subcategoryId: string) => {
+    await playCarSound();
+    router.push(`/products?subcategory=${subcategoryId}`);
   };
-
-  const services = [
-    { name: 'Sub Oils', image: require('@/assets/oil.png'), category: 'oils' },
-    { name: 'Sub Tires', image: require('@/assets/tires.jpg'), category: 'tires' },
-    { name: 'Sub Batteries', image: require('@/assets/battery.jpg'), category: 'batteries' },
-    { name: 'Sub Spare Parts', image: require('@/assets/spare.jpg'), category: 'spare-parts' },
-    { name: 'Sub Maintenance', image: require('@/assets/body.jpg'), category: 'maintenance' },
-    { name: 'Sub Body Shop', image: require('@/assets/repairs.png'), category: 'body-shop' },
-  ];
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.gridContainer}>
-        {services.map((service, index) => (
-          <TouchableOpacity 
+        {subcategories.map((subcategory: any, index) => (
+          <TouchableOpacity
             key={index}
             style={styles.card}
-            onPress={() => handleSubcategoryPress(service.category)}
+            onPress={() => handleSubcategoryPress(subcategory.id)}
           >
             <View style={styles.cardInner}>
-              <Image source={service.image} style={styles.cardImage} resizeMode="contain" />
-              <ThemedText style={styles.cardTitle}>{service.name}</ThemedText>
-              <ThemedText style={styles.cardDescription}>description</ThemedText>
+              <Image source={{ uri: subcategory.image }} style={styles.cardImage} resizeMode="contain" />
+              <ThemedText style={styles.cardTitle}>{subcategory.title}</ThemedText>
+              <ThemedText style={styles.cardDescription}>{subcategory.description}</ThemedText>
             </View>
           </TouchableOpacity>
         ))}
@@ -89,7 +94,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
-    elevation: 4, // Android shadow
+    elevation: 4,
     marginBottom: 20,
   },
   cardInner: {
@@ -109,9 +114,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
+    textAlign: 'center',
   },
   cardDescription: {
     fontSize: 13,
     color: '#666',
+    textAlign: 'center',
   },
 });
