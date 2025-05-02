@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  TextInput, 
-  Text, 
-  TouchableOpacity, 
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
   Image,
   FlatList,
   Modal,
@@ -50,7 +50,7 @@ export default function ProductsScreen() {
         `https://yousab-tech.com/groshy/public/api/subcategoryProducts?subcategory_id=${subcategoryId}&per_page=${pagination.per_page}&page=${page}`
       );
       const json = await response.json();
-      
+
       if (json.data) {
         setProducts(page === 1 ? json.data : [...products, ...json.data]);
         setPagination(json.pagination);
@@ -67,8 +67,8 @@ export default function ProductsScreen() {
   };
 
   // Apply search filter
-  const filteredProducts = products.filter(product => 
-    product.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredProducts = products.filter(product =>
+    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -100,7 +100,7 @@ export default function ProductsScreen() {
         <Text style={[styles.errorText, { color: colors.text }]}>
           Error loading products: {error}
         </Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.retryButton, { backgroundColor: colors.tint }]}
           onPress={() => fetchProducts(subcategory as string)}
         >
@@ -126,39 +126,39 @@ export default function ProductsScreen() {
 
       {/* Action Row (Filter + Sort) */}
       <View style={styles.actionRow}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.cardBackground }]}
           onPress={() => setShowFilters(true)}
         >
-          <MaterialIcons 
-            name="filter-list" 
-            size={18} 
-            color={colors.tint} 
+          <MaterialIcons
+            name="filter-list"
+            size={18}
+            color={colors.tint}
           />
           <Text style={[styles.actionText, { color: colors.tint }]}>
             Filters
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.cardBackground }]}
           onPress={() => {
-            setSortOption(prev => 
-              prev === 'default' ? 'price-low' : 
-              prev === 'price-low' ? 'price-high' : 
-              prev === 'price-high' ? 'rating' : 'default'
+            setSortOption(prev =>
+              prev === 'default' ? 'price-low' :
+                prev === 'price-low' ? 'price-high' :
+                  prev === 'price-high' ? 'rating' : 'default'
             );
           }}
         >
-          <MaterialIcons 
-            name="sort" 
-            size={18} 
-            color={colors.tint} 
+          <MaterialIcons
+            name="sort"
+            size={18}
+            color={colors.tint}
           />
           <Text style={[styles.actionText, { color: colors.tint }]}>
-            Sort: {sortOption === 'default' ? 'Default' : 
-                 sortOption === 'price-low' ? 'Price Low' : 
-                 sortOption === 'price-high' ? 'Price High' : 'Rating'}
+            Sort: {sortOption === 'default' ? 'Default' :
+              sortOption === 'price-low' ? 'Price Low' :
+                sortOption === 'price-high' ? 'Price High' : 'Rating'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -168,14 +168,15 @@ export default function ProductsScreen() {
         data={sortedProducts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={[styles.productCard, { backgroundColor: colors.cardBackground }]}>
-            <TouchableOpacity onPress={() => router.push(`/product?id=${item.id}`)}>
-              <Image 
-                source={{ uri: item.subcategory?.category?.image || 'https://via.placeholder.com/150' }} 
-                style={styles.productImage} 
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.productCard, { backgroundColor: colors.cardBackground }]}
+            onPress={() => router.push(`/product?id=${item.id}`)}
+          >
+            <Image
+              source={{ uri: item.subcategory?.category?.image || 'https://via.placeholder.com/150' }}
+              style={styles.productImage}
+              resizeMode="contain"
+            />
             <View style={styles.productInfo}>
               <Text style={[styles.productName, { color: colors.text }]}>
                 {item.title}
@@ -200,14 +201,13 @@ export default function ProductsScreen() {
                 </Text>
               )}
             </View>
-            
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.cartButton, { backgroundColor: colors.tint }]}
               onPress={() => console.log('Add to cart', item.id)}
             >
               <MaterialCommunityIcons name="cart-plus" size={20} color="white" />
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         )}
         contentContainerStyle={styles.productsContainer}
         ListEmptyComponent={
@@ -228,6 +228,7 @@ export default function ProductsScreen() {
         onEndReached={loadMoreProducts}
         onEndReachedThreshold={0.5}
       />
+
 
       {/* Filter Modal - You can implement this similarly to your original code */}
       <Modal
