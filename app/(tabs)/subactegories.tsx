@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 import { useEffect, useState } from 'react';
 
-export default function HomeScreen() {
+export default function SubCategoriesScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
@@ -34,18 +34,18 @@ export default function HomeScreen() {
     }
   };
 
-  const handleServicePress = async (category: string) => {
-    await playCarSound();
-    router.push(`/subactegories?category=${category}`);
+  const handleSubcategoryPress = async (category: string) => {
+    // await playCarSound();
+    router.push(`/products?category=${category}`);
   };
 
   const services = [
-    { name: 'Oils', image: require('@/assets/oil.png'), category: 'oils' },
-    { name: 'Tires', image: require('@/assets/tires.jpg'), category: 'tires' },
-    { name: 'Batteries', image: require('@/assets/battery.jpg'), category: 'batteries' },
-    { name: 'Spare Parts', image: require('@/assets/spare.jpg'), category: 'spare-parts' },
-    { name: 'Maintenance', image: require('@/assets/body.jpg'), category: 'maintenance' },
-    { name: 'Body Shop', image: require('@/assets/repairs.png'), category: 'body-shop' },
+    { name: 'Sub Oils', image: require('@/assets/oil.png'), category: 'oils' },
+    { name: 'Sub Tires', image: require('@/assets/tires.jpg'), category: 'tires' },
+    { name: 'Sub Batteries', image: require('@/assets/battery.jpg'), category: 'batteries' },
+    { name: 'Sub Spare Parts', image: require('@/assets/spare.jpg'), category: 'spare-parts' },
+    { name: 'Sub Maintenance', image: require('@/assets/body.jpg'), category: 'maintenance' },
+    { name: 'Sub Body Shop', image: require('@/assets/repairs.png'), category: 'body-shop' },
   ];
 
   return (
@@ -55,7 +55,7 @@ export default function HomeScreen() {
           <TouchableOpacity 
             key={index}
             style={styles.card}
-            onPress={() => handleServicePress(service.category)}
+            onPress={() => handleSubcategoryPress(service.category)}
           >
             <View style={styles.cardInner}>
               <Image source={service.image} style={styles.cardImage} resizeMode="contain" />
