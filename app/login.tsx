@@ -32,7 +32,7 @@ export default function LoginScreen() {
         await AsyncStorage.setItem('authToken', data.token);
 
         // Navigate to the main screen
-        router.replace('/index');
+        router.push('/');
       } else {
         Alert.alert('Login Failed', 'Invalid email or password.');
       }
