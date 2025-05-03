@@ -1,39 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   Image, 
   TouchableOpacity, 
   FlatList, 
-  StyleSheet
+  StyleSheet 
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter } from 'expo-router';
-
-const initialCart = [
-  {
-    id: '1',
-    title: 'Synthetic Engine Oil 5W-30',
-    price: 29.99,
-    image: 'https://i5.walmartimages.com/seo/Mobil-1-Advanced-Full-Synthetic-Motor-Oil-5W-20-5-Quart_d481d07b-e2c3-45a9-b267-86b0b1ad8f99.e7397b4ced80f22e1a104fa987dd2606.jpeg',
-    quantity: 1,
-  },
-  {
-    id: '2',
-    title: 'Air Filter',
-    price: 19.99,
-    image: 'https://i5.walmartimages.com/seo/Mobil-1-Advanced-Full-Synthetic-Motor-Oil-5W-20-5-Quart_d481d07b-e2c3-45a9-b267-86b0b1ad8f99.e7397b4ced80f22e1a104fa987dd2606.jpeg',
-    quantity: 2,
-  }
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CartScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [cart, setCart] = useState(initialCart);
+  const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [token, setToken] = useState(null); // State to store the token
+
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        if (storedToken) {
+          console.log('Token retrieved:', storedToken);
+          setToken(storedToken); // Save token to state
+        } else {
+          console.log('No token found');
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+
+    getToken();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      fetchUserCart();
+    }
+  }, [token]); // Re-run when the token is set
+
+  const fetchUserCart = async () => {
+    try {
+      const response = await fetch("https://yousab-tech.com/groshy/public/api/auth/cart", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCart(data.cart);
+        setTotal(data.total);
+      } else {
+        console.error("Failed to fetch cart: ", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching cart: ", error);
+    }
+  };
 
   const increaseQuantity = (id) => {
     setCart(cart.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
@@ -47,31 +78,23 @@ export default function CartScreen() {
     setCart(cart.filter(item => item.id !== id));
   };
 
-  const calculateTotal = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
-  };
   const handleCheckout = () => {
-    // Navigate to the checkout screen
     router.push(`/checkout?cart=${JSON.stringify(cart)}`);
-
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>      
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.hash}
         renderItem={({ item }) => (
-          <View style={[styles.cartItem, { backgroundColor: colors.cardBackground, borderColor:colors.border }]}>            
-            <Image source={{ uri: item.image }} style={styles.image} />
-            
+          <View style={[styles.cartItem, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <Image source={{ uri: item.image || "https://via.placeholder.com/70" }} style={styles.image} />
             <View style={styles.detailsContainer}>
               <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
               <Text style={[styles.price, { color: colors.tint }]}>${item.price.toFixed(2)}</Text>
             </View>
-            
             <View style={styles.actionsContainer}>
-             
               <View style={styles.quantityContainer}>
                 <TouchableOpacity onPress={() => decreaseQuantity(item.id)}>
                   <MaterialIcons name="remove-circle-outline" size={24} color={colors.tint} />
@@ -82,25 +105,17 @@ export default function CartScreen() {
                 </TouchableOpacity>
               </View>
               <TouchableOpacity onPress={() => removeItem(item.id)}>
-                <MaterialIcons name="delete" size={24} color={colors.tint} style={{marginLeft:20,}} />
+                <MaterialIcons name="delete" size={24} color={colors.tint} style={{ marginLeft: 20 }} />
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
-      
-      {/* Total & Checkout Section */}
-      <View style={[styles.totalContainer,]}>
-        <Text style={[styles.totalText, { color: colors.text }]}>Subtotal: <Text style={{ color: colors.tint }}>${calculateTotal()}</Text></Text>
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <Text style={[styles.totalText, { color: colors.text }]}>Total: <Text style={{ color: colors.tint }}>${calculateTotal()}</Text></Text>
-        <TouchableOpacity
-  style={[styles.checkoutButton, { backgroundColor: colors.tint }]}
-  onPress={handleCheckout} // Add the handleCheckout function here
->
-  <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-</TouchableOpacity>
-
+      <View style={styles.totalContainer}>
+        <Text style={[styles.totalText, { color: colors.text }]}>Subtotal: <Text style={{ color: colors.tint }}>${total.toFixed(2)}</Text></Text>
+        <TouchableOpacity style={[styles.checkoutButton, { backgroundColor: colors.tint }]} onPress={handleCheckout}>
+          <Text style={styles.checkoutText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -136,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actionsContainer: {
-    marginTop:30,
+    marginTop: 30,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -169,11 +184,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  divider: {
-    height: 1,
-    // marginVertical: 16,
-    opacity: 0.2,
-    marginVertical:8,
   },
 });
