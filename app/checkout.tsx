@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import { useRouter } from 'expo-router';
-import { useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
 export default function CheckoutScreen() {
@@ -12,16 +21,27 @@ export default function CheckoutScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { cart } = useLocalSearchParams();
 
-  // Parse the cart
   const parsedCart = Array.isArray(cart) ? cart[0] : cart;
   const parsedCartData = JSON.parse(parsedCart || '[]');
 
   const [address, setAddress] = useState('');
   const [mobile, setMobile] = useState('');
   const [selectedPayment, setSelectedPayment] = useState('credit');
-
   const [isShippingOpen, setIsShippingOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    const loadToken = async () => {
+      const storedToken = await AsyncStorage.getItem('authToken');
+      if (storedToken) {
+        setToken(storedToken);
+      } else {
+        Alert.alert('Error', 'User not authenticated.');
+      }
+    };
+    loadToken();
+  }, []);
 
   const paymentMethods = [
     { id: 'credit', name: 'Credit Card', icon: 'credit-card', iconType: FontAwesome },
@@ -29,32 +49,47 @@ export default function CheckoutScreen() {
   ];
 
   const calculateTotal = () => {
-    return parsedCartData.reduce(
-      (total, item) => total + (parseFloat(item.price) * (item.quantity ?? 1)),
-      0
-    ).toFixed(2);
+    return parsedCartData
+      .reduce((total, item) => total + parseFloat(item.price) * (item.quantity ?? 1), 0)
+      .toFixed(2);
   };
 
-  const handleCheckout = () => {
-    if (address && mobile) {
-      console.log('Proceeding to payment with method:', selectedPayment);
-      
-      // Pass the order details to the OrderDetails page
-      const orderDetails = {
-        cartItems: parsedCartData,
-        totalAmount: calculateTotal(),
-        address: address,
-        mobile: mobile,
-        paymentMethod: paymentMethods.find((method) => method.id === selectedPayment)?.name,
-      };
+  const handleCheckout = async () => {
+    if (!address || !mobile) {
+      Alert.alert('Missing Info', 'Please fill out all fields!');
+      return;
+    }
 
-      // Navigate to the OrderDetailsScreen and pass orderDetails
-      router.push({
-        pathname: '/OrderDetailsScreen',
-        params: { orderDetails },
-      });
-    } else {
-      alert('Please fill out all fields!');
+    try {
+      const response = await fetch(
+        'https://yousab-tech.com/groshy/public/api/auth/order/store',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            address: address,
+            paymentMethod: selectedPayment,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push({
+          pathname: '/OrderDetailsScreen',
+          params: { order: JSON.stringify(data.order) },
+        });
+      } else {
+        Alert.alert('Order Failed', data.message || 'Please try again.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Something went wrong.');
     }
   };
 
@@ -65,7 +100,7 @@ export default function CheckoutScreen() {
         Please provide your shipping details and select a payment method.
       </Text>
 
-      {/* Shipping Details Section */}
+      {/* Shipping Details */}
       <View style={[styles.section, { borderColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => setIsShippingOpen(!isShippingOpen)}
@@ -80,7 +115,7 @@ export default function CheckoutScreen() {
             color={colors.text}
           />
         </TouchableOpacity>
-        
+
         {isShippingOpen && (
           <View>
             <TextInput
@@ -90,7 +125,6 @@ export default function CheckoutScreen() {
               value={address}
               onChangeText={setAddress}
             />
-
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
               placeholder="Enter your mobile number"
@@ -103,8 +137,8 @@ export default function CheckoutScreen() {
         )}
       </View>
 
-      {/* Payment Methods Section */}
-      <View style={[styles.section, {borderColor: colors.border }]}>
+      {/* Payment Methods */}
+      <View style={[styles.section, { borderColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => setIsPaymentOpen(!isPaymentOpen)}
           style={styles.toggleButton}
@@ -124,18 +158,27 @@ export default function CheckoutScreen() {
             {paymentMethods.map((method) => (
               <TouchableOpacity
                 key={method.id}
-                style={[styles.paymentMethod, { 
-                  backgroundColor: selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
-                  borderColor: selectedPayment === method.id ? colors.tint : colors.border 
-                }]}
+                style={[
+                  styles.paymentMethod,
+                  {
+                    backgroundColor:
+                      selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
+                    borderColor: selectedPayment === method.id ? colors.tint : colors.border,
+                  },
+                ]}
                 onPress={() => setSelectedPayment(method.id)}
               >
-                <method.iconType 
-                  name={method.icon} 
-                  size={24} 
-                  color={selectedPayment === method.id ? colors.tint : colors.text} 
+                <method.iconType
+                  name={method.icon}
+                  size={24}
+                  color={selectedPayment === method.id ? colors.tint : colors.text}
                 />
-                <Text style={[styles.paymentText, { color: selectedPayment === method.id ? colors.tint : colors.text }]}>
+                <Text
+                  style={[
+                    styles.paymentText,
+                    { color: selectedPayment === method.id ? colors.tint : colors.text },
+                  ]}
+                >
                   {method.name}
                 </Text>
                 {selectedPayment === method.id && (
@@ -147,19 +190,15 @@ export default function CheckoutScreen() {
         )}
       </View>
 
-      {/* Order Summary Section */}
-      <View style={[styles.section, {borderColor: colors.border}]}>
+      {/* Order Summary */}
+      <View style={[styles.section, { borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.tint }]}>
           <MaterialIcons name="receipt" size={20} /> Order Summary
         </Text>
-        
+
         {parsedCartData.map((item) => (
-          <View key={item.id} style={[styles.itemCard, { backgroundColor: colors.cardBackground }]}> 
-            {/* Item Image */}
-            <Image 
-              source={{ uri: item.image }} 
-              style={styles.itemImage} 
-            />
+          <View key={item.id} style={[styles.itemCard, { backgroundColor: colors.cardBackground }]}>
+            <Image source={{ uri: item.image }} style={styles.itemImage} />
             <View style={styles.itemDetails}>
               <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
               <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
@@ -174,16 +213,15 @@ export default function CheckoutScreen() {
             </View>
           </View>
         ))}
-        
+
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        
+
         <View style={styles.totalContainer}>
           <Text style={[styles.totalLabel, { color: colors.text }]}>Total:</Text>
           <Text style={[styles.totalAmount, { color: colors.tint }]}>${calculateTotal()}</Text>
         </View>
       </View>
 
-      {/* Checkout Button */}
       <TouchableOpacity
         style={[styles.confirmButton, { backgroundColor: colors.tint }]}
         onPress={handleCheckout}
@@ -306,8 +344,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 32,
+    marginTop: 16,
   },
   buttonText: {
     color: 'white',

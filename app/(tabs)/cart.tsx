@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet
-} from 'react-native';
+import { View, Text, Image, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';  // Import useFocusEffect
 
 export default function CartScreen() {
   const router = useRouter();
@@ -36,11 +30,14 @@ export default function CartScreen() {
     getToken();
   }, []);
 
-  useEffect(() => {
-    if (token) {
-      fetchUserCart();
-    }
-  }, [token]);
+  // This effect fetches the cart data whenever the screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (token) {
+        fetchUserCart();
+      }
+    }, [token])
+  );
 
   const fetchUserCart = async () => {
     try {
@@ -53,7 +50,8 @@ export default function CartScreen() {
       });
       const data = await response.json();
       if (data.success) {
-        setCart(data.cart);
+        const updatedCart = data.cart ? Object.values(data.cart) : [];
+        setCart(updatedCart);
         setTotal(data.total);
       } else {
         console.error("Failed to fetch cart: ", data.message);
@@ -78,19 +76,34 @@ export default function CartScreen() {
       );
       const data = await response.json();
       if (data.success) {
-        setCart(prevCart =>
-          prevCart.map(item =>
-            item.hash === hash
-              ? { ...item, quantity: data.quantity, price: data.price }
-              : item
-          )
-        );
-        setTotal(data.total);
+        fetchUserCart(); // Re-fetch full cart for sync
       } else {
         console.error("Failed to update quantity:", data.message);
       }
     } catch (error) {
       console.error("Error updating quantity:", error);
+    }
+  };
+
+  const removeFromCart = async (hash) => {
+    try {
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/remove/cart', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ hash }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        fetchUserCart(); // Fetch latest cart instead of using returned cart
+      } else {
+        console.error("Failed to remove item:", data.message);
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
     }
   };
 
@@ -108,7 +121,7 @@ export default function CartScreen() {
             <Image source={{ uri: item.image || "https://via.placeholder.com/70" }} style={styles.image} />
             <View style={styles.detailsContainer}>
               <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-              <Text style={[styles.price, { color: colors.tint }]}>${item.price.toFixed(2)}</Text>
+              <Text style={[styles.price, { color: colors.tint }]}>${item.price}</Text>
             </View>
             <View style={styles.actionsContainer}>
               <View style={styles.quantityContainer}>
@@ -120,7 +133,7 @@ export default function CartScreen() {
                   <MaterialIcons name="add-circle-outline" size={24} color={colors.tint} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => setCart(cart.filter(i => i.hash !== item.hash))}>
+              <TouchableOpacity onPress={() => removeFromCart(item.hash)}>
                 <MaterialIcons name="delete" size={24} color={colors.tint} style={{ marginLeft: 20 }} />
               </TouchableOpacity>
             </View>
@@ -148,6 +161,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
+    borderWidth: 1,
   },
   image: {
     width: 70,
