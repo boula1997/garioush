@@ -77,11 +77,11 @@ export default function ProductsScreen() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ product_id: productId })
+        body: JSON.stringify({ id: productId })
       });
 
       const json = await response.json();
-       
+       console.log(json);
       if (json.success) {
         Alert.alert('تم إضافة المنتج إلى العربة', `الإجمالي: ${json.total} جنيه`);
       } else {

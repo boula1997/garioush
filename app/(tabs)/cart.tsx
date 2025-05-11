@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  Image, 
-  TouchableOpacity, 
-  FlatList, 
-  StyleSheet 
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -19,17 +19,14 @@ export default function CartScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
-  const [token, setToken] = useState(null); // State to store the token
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     const getToken = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('authToken');
         if (storedToken) {
-          console.log('Token retrieved:', storedToken);
-          setToken(storedToken); // Save token to state
-        } else {
-          console.log('No token found');
+          setToken(storedToken);
         }
       } catch (error) {
         console.error('Error retrieving token:', error);
@@ -43,7 +40,7 @@ export default function CartScreen() {
     if (token) {
       fetchUserCart();
     }
-  }, [token]); // Re-run when the token is set
+  }, [token]);
 
   const fetchUserCart = async () => {
     try {
@@ -66,16 +63,35 @@ export default function CartScreen() {
     }
   };
 
-  const increaseQuantity = (id) => {
-    setCart(cart.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
-  };
-
-  const decreaseQuantity = (id) => {
-    setCart(cart.map(item => item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item));
-  };
-
-  const removeItem = (id) => {
-    setCart(cart.filter(item => item.id !== id));
+  const updateQuantity = async (hash, action) => {
+    try {
+      const response = await fetch(
+        `https://yousab-tech.com/groshy/public/api/auth/update/item/count?action=${action}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ hash })
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setCart(prevCart =>
+          prevCart.map(item =>
+            item.hash === hash
+              ? { ...item, quantity: data.quantity, price: data.price }
+              : item
+          )
+        );
+        setTotal(data.total);
+      } else {
+        console.error("Failed to update quantity:", data.message);
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
   };
 
   const handleCheckout = () => {
@@ -96,15 +112,15 @@ export default function CartScreen() {
             </View>
             <View style={styles.actionsContainer}>
               <View style={styles.quantityContainer}>
-                <TouchableOpacity onPress={() => decreaseQuantity(item.id)}>
+                <TouchableOpacity onPress={() => updateQuantity(item.hash, 'decrement')}>
                   <MaterialIcons name="remove-circle-outline" size={24} color={colors.tint} />
                 </TouchableOpacity>
                 <Text style={[styles.quantityText, { color: colors.text }]}>{item.quantity}</Text>
-                <TouchableOpacity onPress={() => increaseQuantity(item.id)}>
+                <TouchableOpacity onPress={() => updateQuantity(item.hash, 'increment')}>
                   <MaterialIcons name="add-circle-outline" size={24} color={colors.tint} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => removeItem(item.id)}>
+              <TouchableOpacity onPress={() => setCart(cart.filter(i => i.hash !== item.hash))}>
                 <MaterialIcons name="delete" size={24} color={colors.tint} style={{ marginLeft: 20 }} />
               </TouchableOpacity>
             </View>
