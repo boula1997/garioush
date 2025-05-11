@@ -44,8 +44,9 @@ export default function CheckoutScreen() {
   }, []);
 
   const paymentMethods = [
-    { id: 'credit', name: 'Credit Card', icon: 'credit-card', iconType: FontAwesome },
-    { id: 'cash', name: 'Cash on Delivery', icon: 'money', iconType: FontAwesome },
+    { id: 'wallet', name: 'Wallet', icon: 'wallet', iconType: FontAwesome },
+    { id: 'card', name: 'Cards', icon: 'credit-card', iconType: FontAwesome },
+    { id: 'stc_pay', name: 'STC Pay', icon: 'mobile', iconType: FontAwesome },
   ];
 
   const calculateTotal = () => {
@@ -59,7 +60,7 @@ export default function CheckoutScreen() {
       Alert.alert('Missing Info', 'Please fill out all fields!');
       return;
     }
-
+  
     try {
       const response = await fetch(
         'https://yousab-tech.com/groshy/public/api/auth/order/store',
@@ -76,23 +77,25 @@ export default function CheckoutScreen() {
           }),
         }
       );
-
+  
       const data = await response.json();
+  
+      console.log('API Full Response:',data); // 🔍 Inspect full data
+      if (response.ok && data.order) {
 
-      if (response.ok) {
         router.push({
           pathname: '/OrderDetailsScreen',
           params: { order: JSON.stringify(data.order) },
         });
       } else {
-        Alert.alert('Order Failed', data.message || 'Please try again.');
+        Alert.alert('Order Failed', data.success || data.message || 'Please try again.');
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Something went wrong.');
     }
   };
-
+  
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.tint }]}>Checkout</Text>
