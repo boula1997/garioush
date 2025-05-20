@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useTranslation } from 'react-i18next';
 
 const notifications = [
   {
@@ -30,6 +31,7 @@ const notifications = [
 export default function NotificationScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>      
@@ -40,9 +42,9 @@ export default function NotificationScreen() {
           <View style={[styles.notificationItem, { backgroundColor: colors.cardBackground }]}>            
             <Image source={{ uri: item.image }} style={styles.image} />
             <View style={styles.textContainer}>
-              <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-              <Text style={[styles.description, { color: colors.textSecondary }]}>{item.description}</Text>
-              <Text style={[styles.time, { color: colors.textSecondary }]}>{item.time}</Text>
+              <Text style={[styles.title, { color: colors.text }]}>{t(item.title)}</Text>
+              <Text style={[styles.description, { color: colors.textSecondary }]}>{t(item.description)}</Text>
+              <Text style={[styles.time, { color: colors.textSecondary }]}>{t(item.time)}</Text>
             </View>
           </View>
         )}

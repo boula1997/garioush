@@ -1,152 +1,55 @@
-import { View, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+
 
 export default function LoginScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
   const [showPassword, setShowPassword] = useState(false);
-  const [showSurvey, setShowSurvey] = useState(false);
-  
-  // Survey state
-  const [surveyData, setSurveyData] = useState({
-    exterior: '',
-    interior: '',
-    mechanical: ''
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+   const { t } = useTranslation();
 
-  const handleLogin = () => {
-    setShowSurvey(true);
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Store the token in localStorage
+        await AsyncStorage.setItem('authToken', data.token);
+
+        // Navigate to the main screen
+        router.push('/');
+      } else {
+        Alert.alert('Login Failed', 'Invalid email or password.');
+      }
+    } catch (error) {
+      console.error('Login Error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again later.');
+    }
   };
 
-  const handleSurveySubmit = () => {
-    router.replace('/(tabs)/index');
-  };
-
-  if (showSurvey) {
-    return (
-      <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-        <ScrollView contentContainerStyle={styles.surveyContainer}>
-          <View style={styles.header}>
-            <ThemedText style={[styles.title, { color: themeColors.tint }]}>Car Condition</ThemedText>
-            <ThemedText style={styles.subtitle}>Please assess your vehicle</ThemedText>
-          </View>
-
-          {/* Exterior Condition */}
-          <View style={styles.surveySection}>
-            <ThemedText style={[styles.surveyQuestion, { color: themeColors.text }]}>Exterior Condition</ThemedText>
-            <View style={styles.optionRow}>
-              {['Excellent', 'Good', 'Fair', 'Poor'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.optionButton,
-                    { borderColor: themeColors.border },
-                    surveyData.exterior === option && {
-                      backgroundColor: themeColors.tint,
-                      borderColor: themeColors.tint
-                    }
-                  ]}
-                  onPress={() => setSurveyData({...surveyData, exterior: option})}
-                >
-                  <ThemedText style={[
-                    styles.optionText,
-                    { color: themeColors.text },
-                    surveyData.exterior === option && { color: themeColors.buttonText }
-                  ]}>
-                    {option}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Interior Condition */}
-          <View style={styles.surveySection}>
-            <ThemedText style={[styles.surveyQuestion, { color: themeColors.text }]}>Interior Condition</ThemedText>
-            <View style={styles.optionRow}>
-              {['Excellent', 'Good', 'Fair', 'Poor'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.optionButton,
-                    { borderColor: themeColors.border },
-                    surveyData.interior === option && {
-                      backgroundColor: themeColors.tint,
-                      borderColor: themeColors.tint
-                    }
-                  ]}
-                  onPress={() => setSurveyData({...surveyData, interior: option})}
-                >
-                  <ThemedText style={[
-                    styles.optionText,
-                    { color: themeColors.text },
-                    surveyData.interior === option && { color: themeColors.buttonText }
-                  ]}>
-                    {option}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Mechanical Issues */}
-          <View style={styles.surveySection}>
-            <ThemedText style={[styles.surveyQuestion, { color: themeColors.text }]}>Mechanical Issues</ThemedText>
-            <View style={styles.optionRow}>
-              {['None', 'Minor', 'Moderate', 'Severe'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.optionButton,
-                    { borderColor: themeColors.border },
-                    surveyData.mechanical === option && {
-                      backgroundColor: themeColors.tint,
-                      borderColor: themeColors.tint
-                    }
-                  ]}
-                  onPress={() => setSurveyData({...surveyData, mechanical: option})}
-                >
-                  <ThemedText style={[
-                    styles.optionText,
-                    { color: themeColors.text },
-                    surveyData.mechanical === option && { color: themeColors.buttonText }
-                  ]}>
-                    {option}
-                  </ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <TouchableOpacity 
-            style={[styles.button, { 
-              backgroundColor: themeColors.tint,
-              opacity: surveyData.exterior && surveyData.interior && surveyData.mechanical ? 1 : 0.6
-            }]}
-            onPress={handleSurveySubmit}
-            disabled={!surveyData.exterior || !surveyData.interior || !surveyData.mechanical}
-          >
-            <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
-              Submit
-            </ThemedText>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    );
-  }
-
-  // Original login screen remains completely unchanged
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={styles.header}>
-        <ThemedText style={[styles.title, { color: themeColors.tint }]}>Login</ThemedText>
-        <ThemedText style={styles.subtitle}>Welcome back</ThemedText>
+        <ThemedText style={[styles.title, { color: themeColors.tint }]}>{t('Login')}</ThemedText>
+        <ThemedText style={styles.subtitle}>{t('Welcome back')}</ThemedText>
       </View>
 
       <View style={styles.form}>
@@ -154,10 +57,12 @@ export default function LoginScreen() {
           <FontAwesome name="envelope" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Email"
+            placeholder={t('Email')}
             placeholderTextColor={themeColors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
           />
         </View>
 
@@ -165,148 +70,70 @@ export default function LoginScreen() {
           <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Password"
+            placeholder={t('Password')}
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <FontAwesome 
-              name={showPassword ? 'eye' : 'eye-slash'} 
-              size={20} 
-              color={themeColors.textSecondary} 
+            <FontAwesome
+              name={showPassword ? 'eye' : 'eye-slash'}
+              size={20}
+              color={themeColors.textSecondary}
             />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.forgotPassword}
-          onPress={() => router.push('/forgot-password')}
-        >
-          <ThemedText style={{ color: themeColors.tint }}>
-            Forgot your password?
-          </ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, { backgroundColor: themeColors.tint }]}
           onPress={handleLogin}
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
-            Login
+            {t('Login')}
           </ThemedText>
         </TouchableOpacity>
 
-        <View style={styles.createAccountContainer}>
-          <ThemedText style={{ color: themeColors.textSecondary }}>
-            Don't have an account?{' '}
-          </ThemedText>
-          <TouchableOpacity onPress={() => router.push('/register')}>
-            <ThemedText style={{ color: themeColors.tint, fontWeight: 'bold' }}>
-              Create an account
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.registerLink}
+          onPress={() => router.push('/register')}
+        >
+        <ThemedText style={[styles.registerText, { color: themeColors.tint }]}>
+  {t('Do not have an account?')}{" "}
+  <ThemedText style={{ color: themeColors.tint, fontWeight: 'bold' }}>
+    {t('Register')}
+  </ThemedText>
+</ThemedText>
+
+
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Your original styles remain completely unchanged
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color:"#fff",
-  },
-  subtitle: {
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  form: {
-    width: '100%',
-  },
+  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  header: { marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: 'bold' },
+  subtitle: { fontSize: 16, marginTop: 5 },
+  form: { marginTop: 20 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 15,
     marginBottom: 15,
-    height: 50,
+    paddingHorizontal: 10,
   },
-  icon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    height: '100%',
-    fontSize: 16,
-  },
-  eyeIcon: {
-    padding: 10,
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
-  button: {
-    width: '100%',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  createAccountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  
-  // New survey-only styles
-  surveyContainer: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  surveySection: {
-    marginBottom: 25,
-  },
-  surveyQuestion: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-  },
-  optionButton: {
-    minWidth: '23%',
-    padding: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  optionText: {
-    fontSize: 14,
-  },
+  input: { flex: 1, height: 40 },
+  icon: { marginRight: 10 },
+  eyeIcon: { paddingHorizontal: 5 },
+  button: { padding: 15, borderRadius: 8, alignItems: 'center' },
+  buttonText: { fontSize: 16, fontWeight: 'bold' },
+  registerLink: { marginTop: 15, alignItems: 'center' },
+  registerText: { fontSize: 14 },
 });

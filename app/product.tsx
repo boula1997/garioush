@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -7,7 +7,8 @@ import {
   TouchableOpacity, 
   Image,
   FlatList,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import { FontAwesome, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -16,38 +17,69 @@ import { useLocalSearchParams } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-// Mock product data
-const PRODUCTS = {
-  '1': {
-    id: '1',
-    title: 'Synthetic Engine Oil 5W-30',
-    brand: 'Mobil',
-    price: 29.99,
-    description: 'Premium full synthetic engine oil designed to provide outstanding engine protection and performance. Formulated with advanced synthetic technology to help extend engine life.',
-    features: [
-      'Provides excellent engine cleanliness',
-      'Enhanced wear protection',
-      'Improved fuel economy',
-      'Works in extreme temperatures'
-    ],
-    images: [
-      'https://i5.walmartimages.com/seo/Mobil-1-Advanced-Full-Synthetic-Motor-Oil-5W-20-5-Quart_d481d07b-e2c3-45a9-b267-86b0b1ad8f99.e7397b4ced80f22e1a104fa987dd2606.jpeg',
-      'https://scene7.samsclub.com/is/image/samsclub/0007192444975_A',
-      'https://www.mobil.com/lubricants/-/media/project/wep/mobil/mobil-row-us-1/for-personal-vehicles/auto-care/all-about-oil/aug-20-updates/5w-20-oil-viscosity-mobil-2020/5w-20-oil-viscosity-mobil-2020-fb-og.jpg'
-    ],
-    rating: 4.5,
-    reviews: 128,
-    inStock: true
-  }
-};
-
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const product = PRODUCTS[id];
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (id) {
+      fetchProduct(id as string);
+    }
+  }, [id]);
+
+  const fetchProduct = async (productId: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `https://yousab-tech.com/groshy/public/api/product/${productId}`
+      );
+      const json = await response.json();
+      
+      if (json.data?.product) {
+        setProduct(json.data.product);
+      } else {
+        setError('Product not found');
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const increaseQuantity = () => setQuantity(prev => prev + 1);
+  const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.text }]}>
+          {error}
+        </Text>
+        <TouchableOpacity 
+          style={[styles.retryButton, { backgroundColor: colors.tint }]}
+          onPress={() => fetchProduct(id as string)}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!product) {
     return (
@@ -57,8 +89,10 @@ export default function ProductDetailsScreen() {
     );
   }
 
-  const increaseQuantity = () => setQuantity(prev => prev + 1);
-  const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  // Use category image as the main product image if no specific product images are available
+  const productImages = product.category?.image 
+    ? [product.category.image] 
+    : ['https://via.placeholder.com/150'];
 
   return (
     <ScrollView 
@@ -68,7 +102,7 @@ export default function ProductDetailsScreen() {
       {/* Image Slider */}
       <View style={styles.sliderContainer}>
         <FlatList
-          data={product.images}
+          data={productImages}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
@@ -85,20 +119,22 @@ export default function ProductDetailsScreen() {
           )}
           keyExtractor={(item, index) => index.toString()}
         />
-        <View style={styles.pagination}>
-          {product.images.map((_, index) => (
-            <View 
-              key={index}
-              style={[
-                styles.paginationDot,
-                { 
-                  backgroundColor: index === activeImageIndex ? colors.tint : '#ccc',
-                  width: index === activeImageIndex ? 12 : 8,
-                }
-              ]}
-            />
-          ))}
-        </View>
+        {productImages.length > 1 && (
+          <View style={styles.pagination}>
+            {productImages.map((_, index) => (
+              <View 
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  { 
+                    backgroundColor: index === activeImageIndex ? colors.tint : '#ccc',
+                    width: index === activeImageIndex ? 12 : 8,
+                  }
+                ]}
+              />
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Product Info Section */}
@@ -109,19 +145,17 @@ export default function ProductDetailsScreen() {
             {product.title}
           </Text>
           <View style={styles.priceContainer}>
-          <Text style={[styles.brandText, { color: colors.textSecondary }]}>
-            by {product.brand}
-          </Text>
-          <Text style={[styles.price, { color: colors.tint }]}>
-            ${product.price.toFixed(2)}
-          </Text>
+            <Text style={[styles.brandText, { color: colors.textSecondary }]}>
+              {product.brand ? `by ${product.brand}` : ''}
+            </Text>
+            <Text style={[styles.price, { color: colors.tint }]}>
+              ${product.price.toFixed(2)}
+            </Text>
           </View>
         </View>
 
         {/* Price and Add to Cart */}
         <View style={styles.actionContainer}>
-         
-          
           <View style={styles.quantityContainer}>
             <TouchableOpacity 
               style={[styles.quantityButton, { borderColor: colors.tint }]}
@@ -165,50 +199,64 @@ export default function ProductDetailsScreen() {
           </Text>
         </View>
 
-     
-
-        {/* Features */}
+        {/* Category */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Key Features
+            Category
           </Text>
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          {product.features.map((feature, index) => (
-            <View key={index} style={styles.featureItem}>
-              <MaterialIcons 
-                name="check-circle" 
-                size={18} 
-                color={colors.tint} 
-                style={styles.featureIcon}
-              />
-              <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-                {feature}
-              </Text>
-            </View>
-          ))}
+          <Text style={[styles.productDescription, { color: colors.textSecondary }]}>
+            {product.category?.title} - {product.subcategory?.title}
+          </Text>
         </View>
 
-        
-
-        {/* Ratings */}
-        {/* <View style={styles.ratingContainer}>
-          <View style={styles.starContainer}>
-            {[...Array(5)].map((_, i) => (
-              <FontAwesome 
-                key={i}
-                name="star" 
-                size={18} 
-                color={i < Math.floor(product.rating) ? '#FFD700' : '#DDD'} 
-              />
-            ))}
-            <Text style={[styles.ratingText, { color: colors.text }]}>
-              {product.rating.toFixed(1)}
+        {/* Rating */}
+        {product.rate && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Rating
             </Text>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={styles.ratingContainer}>
+              <View style={styles.starContainer}>
+                {[...Array(5)].map((_, i) => (
+                  <FontAwesome 
+                    key={i}
+                    name="star" 
+                    size={18} 
+                    color={i < Math.floor(product.rate) ? '#FFD700' : '#DDD'} 
+                  />
+                ))}
+                <Text style={[styles.ratingText, { color: colors.text }]}>
+                  {product.rate.toFixed(1)}
+                </Text>
+              </View>
+            </View>
           </View>
-          <Text style={[styles.reviewsText, { color: colors.textSecondary }]}>
-            {product.reviews} reviews
-          </Text>
-        </View> */}
+        )}
+
+        {/* Additional Details */}
+        {product.details && Object.keys(product.details).length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Specifications
+            </Text>
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            {Object.entries(product.details).map(([key, value], index) => (
+              <View key={index} style={styles.featureItem}>
+                <MaterialIcons 
+                  name="check-circle" 
+                  size={18} 
+                  color={colors.tint} 
+                  style={styles.featureIcon}
+                />
+                <Text style={[styles.featureText, { color: colors.textSecondary }]}>
+                  {key}: {value}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -223,8 +271,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
   },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    margin: 20,
+  },
+  retryButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
   sliderContainer: {
-    height: width * 0.9, // Slightly smaller than screen width
+    height: width * 0.9,
     position: 'relative',
     backgroundColor: '#F8F8F8',
   },
@@ -240,15 +302,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   paginationDot: {
-    width: 16,
+    width: 8,
     height: 8,
     borderRadius: 4,
     marginHorizontal: 4,
   },
   infoContainer: {
     padding: 20,
-    // margin: 16,
-    marginBottom:-20,
+    marginBottom: -20,
     borderRadius: 12,
   },
   titleContainer: {
@@ -271,21 +332,19 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: 'bold',
-    flex: 1,
     marginLeft: 200,
-    marginTop:-6,
+    marginTop: -6,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 12,
   },
-  priceContainer:{
+  priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-
   quantityButton: {
     width: 40,
     height: 40,
@@ -317,13 +376,11 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     padding: 20,
-    // margin: 16,
     marginTop: 0,
     borderRadius: 12,
-   
   },
   section: {
-    // marginBottom: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -338,9 +395,8 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    // marginVertical: 16,
+    marginBottom: 12,
     opacity: 0.2,
-    marginBottom:12,
   },
   featureItem: {
     flexDirection: 'row',
@@ -369,9 +425,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
     fontWeight: '600',
-  },
-  reviewsText: {
-    fontSize: 14,
-    opacity: 0.8,
   },
 });

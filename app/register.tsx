@@ -6,21 +6,22 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios'; // Make sure axios is installed (`npm install axios`)
 
 export default function AuthScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showpassword_confirmation, setShowpassword_confirmation] = useState(false);
   const [showCarForm, setShowCarForm] = useState(false);
 
   // Auth state
   const [authData, setAuthData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
-    username: '',
+    password_confirmation: '',
+    fullname: '',
     phone: '',
   });
 
@@ -46,100 +47,132 @@ export default function AuthScreen() {
     }
   };
 
-  const handleAuthSubmit = () => {
-    // Skip login/register condition and show car form immediately
-    setShowCarForm(true);
+  const handleAuthSubmit = async () => {
+    try {
+      // Perform user registration logic here (e.g., API call)
+      const response = await axios.post('https://yousab-tech.com/groshy/public/api/auth/register', {
+        email: authData.email,
+        password: authData.password,
+        password_confirmation: authData.password_confirmation,
+        fullname: authData.fullname,
+        phone: authData.phone,
+      });
+
+      if (response.data.success) {
+        console.log('User registered successfully:', response.data);
+        router.push('/login')// Show the car registration form after successful registration
+      } else {
+        console.error('Error registering user:', response.data.message);
+        alert(response.data.message); // Alert the user in case of an error
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+      alert('An error occurred while registering.');
+    }
   };
 
-  const handleCarSubmit = () => {
-    // Submit car data and go to home
-    console.log('Car data:', carData);
-    router.replace('/home');
+  const handleCarSubmit = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('brand', carData.brand);
+      formData.append('model', carData.model);
+      formData.append('year', carData.year);
+      formData.append('licensePlate', carData.licensePlate);
+      if (carData.image) {
+        formData.append('image', {
+          uri: carData.image,
+          type: 'image/jpeg', // Assuming the image is JPEG
+          name: 'car_image.jpg',
+        });
+      }
+
+      // Perform car registration logic here (e.g., API call)
+      const response = await axios.post('https://your-api-endpoint.com/car/register', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        console.log('Car registered successfully:', response.data);
+        router.replace('/home'); // Navigate to home after successful registration
+      } else {
+        console.error('Error registering car:', response.data.message);
+        alert(response.data.message); // Alert the user in case of an error
+      }
+    } catch (error) {
+      console.error('Error during car registration:', error);
+      alert('An error occurred while registering the car.');
+    }
   };
 
-  const isRegisterDisabled = false;
+  // if (showCarForm) {
+  //   return (
+  //     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
+  //       <ScrollView contentContainerStyle={styles.formContainer}>
+  //         <View style={styles.header}>
+  //           <ThemedText style={[styles.title, { color: themeColors.tint }]}>Register Your Car</ThemedText>
+  //         </View>
 
-  if (showCarForm) {
-    return (
-      <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-        <ScrollView contentContainerStyle={styles.formContainer}>
-          <View style={styles.header}>
-            <ThemedText style={[styles.title, { color: themeColors.tint }]}>Register Your Car</ThemedText>
-          </View>
+  //         {/* Car Details Form */}
+  //         <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+  //           <FontAwesome name="car" size={20} color={themeColors.tint} style={styles.icon} />
+  //           <TextInput
+  //             style={[styles.input, { color: themeColors.text }]}
+  //             placeholder="Brand (e.g. Toyota)"
+  //             placeholderTextColor={themeColors.textSecondary}
+  //             value={carData.brand}
+  //             onChangeText={(text) => setCarData({ ...carData, brand: text })}
+  //           />
+  //         </View>
 
-          {/* Car Image */}
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-            {carData.image ? (
-              <Image source={{ uri: carData.image }} style={styles.carImage} />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <FontAwesome name="camera" size={24} color={themeColors.textSecondary} />
-                <ThemedText style={[styles.imageText, { color: themeColors.textSecondary }]}>
-                  Add Car Photo
-                </ThemedText>
-              </View>
-            )}
-          </TouchableOpacity>
+  //         <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+  //           <FontAwesome name="car" size={20} color={themeColors.tint} style={styles.icon} />
+  //           <TextInput
+  //             style={[styles.input, { color: themeColors.text }]}
+  //             placeholder="Model (e.g. Camry)"
+  //             placeholderTextColor={themeColors.textSecondary}
+  //             value={carData.model}
+  //             onChangeText={(text) => setCarData({ ...carData, model: text })}
+  //           />
+  //         </View>
 
-          {/* Car Details Form */}
-          <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
-            <FontAwesome name="car" size={20} color={themeColors.tint} style={styles.icon} />
-            <TextInput
-              style={[styles.input, { color: themeColors.text }]}
-              placeholder="Brand (e.g. Toyota)"
-              placeholderTextColor={themeColors.textSecondary}
-              value={carData.brand}
-              onChangeText={(text) => setCarData({ ...carData, brand: text })}
-            />
-          </View>
+  //         <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+  //           <FontAwesome name="calendar" size={20} color={themeColors.tint} style={styles.icon} />
+  //           <TextInput
+  //             style={[styles.input, { color: themeColors.text }]}
+  //             placeholder="Year"
+  //             placeholderTextColor={themeColors.textSecondary}
+  //             keyboardType="numeric"
+  //             value={carData.year}
+  //             onChangeText={(text) => setCarData({ ...carData, year: text })}
+  //           />
+  //         </View>
 
-          <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
-            <FontAwesome name="car" size={20} color={themeColors.tint} style={styles.icon} />
-            <TextInput
-              style={[styles.input, { color: themeColors.text }]}
-              placeholder="Model (e.g. Camry)"
-              placeholderTextColor={themeColors.textSecondary}
-              value={carData.model}
-              onChangeText={(text) => setCarData({ ...carData, model: text })}
-            />
-          </View>
+  //         <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
+  //           <FontAwesome name="id-card" size={20} color={themeColors.tint} style={styles.icon} />
+  //           <TextInput
+  //             style={[styles.input, { color: themeColors.text }]}
+  //             placeholder="License Plate"
+  //             placeholderTextColor={themeColors.textSecondary}
+  //             value={carData.licensePlate}
+  //             onChangeText={(text) => setCarData({ ...carData, licensePlate: text })}
+  //           />
+  //         </View>
 
-          <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
-            <FontAwesome name="calendar" size={20} color={themeColors.tint} style={styles.icon} />
-            <TextInput
-              style={[styles.input, { color: themeColors.text }]}
-              placeholder="Year"
-              placeholderTextColor={themeColors.textSecondary}
-              keyboardType="numeric"
-              value={carData.year}
-              onChangeText={(text) => setCarData({ ...carData, year: text })}
-            />
-          </View>
-
-          <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
-            <FontAwesome name="id-card" size={20} color={themeColors.tint} style={styles.icon} />
-            <TextInput
-              style={[styles.input, { color: themeColors.text }]}
-              placeholder="License Plate"
-              placeholderTextColor={themeColors.textSecondary}
-              value={carData.licensePlate}
-              onChangeText={(text) => setCarData({ ...carData, licensePlate: text })}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: themeColors.tint }]}
-            onPress={handleCarSubmit}
-            disabled={!carData.brand || !carData.model || !carData.year || !carData.licensePlate}
-          >
-            <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
-              Complete Registration
-            </ThemedText>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    );
-  }
+  //         <TouchableOpacity
+  //           style={[styles.button, { backgroundColor: themeColors.tint }]}
+  //           onPress={handleCarSubmit}
+  //           disabled={!carData.brand || !carData.model || !carData.year || !carData.licensePlate}
+  //         >
+  //           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
+  //             Complete Registration
+  //           </ThemedText>
+  //         </TouchableOpacity>
+  //       </ScrollView>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
@@ -166,10 +199,10 @@ export default function AuthScreen() {
           <FontAwesome name="user" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Username"
+            placeholder="Fullname"
             placeholderTextColor={themeColors.textSecondary}
-            value={authData.username}
-            onChangeText={(text) => setAuthData({ ...authData, username: text })}
+            value={authData.fullname}
+            onChangeText={(text) => setAuthData({ ...authData, fullname: text })}
           />
         </View>
 
@@ -195,15 +228,8 @@ export default function AuthScreen() {
             value={authData.password}
             onChangeText={(text) => setAuthData({ ...authData, password: text })}
           />
-          <TouchableOpacity
-            style={styles.eyeIcon}
-            onPress={() => setShowPassword(!showPassword)}
-          >
-            <FontAwesome
-              name={showPassword ? 'eye' : 'eye-slash'}
-              size={20}
-              color={themeColors.textSecondary}
-            />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <FontAwesome name={showPassword ? 'eye-slash' : 'eye'} size={20} color={themeColors.tint} />
           </TouchableOpacity>
         </View>
 
@@ -213,140 +239,76 @@ export default function AuthScreen() {
             style={[styles.input, { color: themeColors.text }]}
             placeholder="Confirm Password"
             placeholderTextColor={themeColors.textSecondary}
-            secureTextEntry={!showConfirmPassword}
-            value={authData.confirmPassword}
-            onChangeText={(text) => setAuthData({ ...authData, confirmPassword: text })}
+            secureTextEntry={!showpassword_confirmation}
+            value={authData.password_confirmation}
+            onChangeText={(text) => setAuthData({ ...authData, password_confirmation: text })}
           />
-          <TouchableOpacity
-            style={styles.eyeIcon}
-            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            <FontAwesome
-              name={showConfirmPassword ? 'eye' : 'eye-slash'}
-              size={20}
-              color={themeColors.textSecondary}
-            />
+          <TouchableOpacity onPress={() => setShowpassword_confirmation(!showpassword_confirmation)}>
+            <FontAwesome name={showpassword_confirmation ? 'eye-slash' : 'eye'} size={20} color={themeColors.tint} />
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: themeColors.tint }]}
           onPress={handleAuthSubmit}
-          disabled={isRegisterDisabled}
+          disabled={!authData.email || !authData.password || !authData.password_confirmation}
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
             Register
           </ThemedText>
         </TouchableOpacity>
-
-        <View style={styles.createAccountContainer}>
-          <ThemedText style={{ color: themeColors.textSecondary }}>
-            Already have an account?{' '}
-          </ThemedText>
-          <TouchableOpacity onPress={() => router.push('/login')}>
-            <ThemedText style={{ color: themeColors.tint, fontWeight: 'bold' }}>Login</ThemedText>
-          </TouchableOpacity>
-        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Your original styles remain unchanged
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: "#fff",
   },
   subtitle: {
     fontSize: 16,
-    opacity: 0.8,
-  },
-  form: {
-    width: '100%',
+    color: '#888',
   },
   formContainer: {
-    flexGrow: 1,
     paddingBottom: 20,
+  },
+  form: {
+    marginTop: 20,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    height: 50,
+    borderBottomWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 5,
   },
   icon: {
     marginRight: 10,
   },
-  input: {
-    flex: 1,
-    height: '100%',
-    fontSize: 16,
-  },
-  eyeIcon: {
-    padding: 10,
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
   button: {
-    width: '100%',
-    height: 50,
-    borderRadius: 8,
+    paddingVertical: 15,
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  createAccountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-
-  // New styles for car registration
-  imagePicker: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#8B0000',
-  },
-  carImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
-  },
-  imagePlaceholder: {
-    backgroundColor:"#ffffff",
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageText: {
-    marginTop: 10,
-    fontSize: 16,
-    color:"#8B0000",
   },
 });

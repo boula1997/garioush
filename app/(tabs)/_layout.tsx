@@ -9,6 +9,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
+import { useTranslation } from 'react-i18next';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -16,6 +17,7 @@ export default function TabLayout() {
   const router = useRouter();
   const [sound, setSound] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { t } = useTranslation();
 
   // Load the sound effect
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function TabLayout() {
       ]}>
         <View style={styles.logoContainer}>
           <ThemedText style={[styles.logoText, { color: themeColors.tint, textShadowColor: themeColors.shadow }]}>
-            GARIOUSH
+           {t('GARIOUSH')}
           </ThemedText>
           <View style={[styles.logoUnderline, { backgroundColor: themeColors.tint }]} />
         </View>
@@ -86,7 +88,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title:  t('Home'),
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
           listeners={({ navigation }) => ({
@@ -100,7 +102,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="cart"
           options={{
-            title: 'Cart',
+            title: t('Cart'),
             tabBarIcon: ({ color }) => <FontAwesome name="shopping-cart" size={24} color={color} />,
           }}
           listeners={({ navigation }) => ({
@@ -114,7 +116,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="notifications"
           options={{
-            title: 'Notifications',
+            title: t('Notifications'),
             tabBarIcon: ({ color }) => <FontAwesome name="bell" size={24} color={color} />,
           }}
           listeners={({ navigation }) => ({
@@ -128,7 +130,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profile',
+            title: t('Profile'),
             tabBarIcon: ({ color }) =>
               isLoggedIn ? (
                 <Image
@@ -152,6 +154,7 @@ export default function TabLayout() {
             },
           })}
         />
+        
       </Tabs>
     </SafeAreaView>
   );
