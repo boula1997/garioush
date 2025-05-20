@@ -52,7 +52,7 @@ export default function RootLayout() {
     return (
       <View style={styles.container}>
         <Image 
-          source={require('../assets/images/logo.png')} // Replace with your logo path
+          source={require('../assets/images/logo2.png')} // Replace with your logo path
           style={styles.logo}
           resizeMode="contain"
         />
