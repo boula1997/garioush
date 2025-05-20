@@ -25,7 +25,7 @@
   "Expert maintenance services for your car.": "خدمات الصيانة المتخصصة لسيارتك. ",
   "Professional body repair and painting services.": "خدمات إصلاح الجسم والطلاء المهنية. ",
   "Proceed to Checkout": "الشروع في الخروج ",
-  "Subtotal:": "المجموع الفرعي:",
+  "Subtotal": "المجموع الفرعي",
   "Order Shipped": "تم شحن الطلب",
   "Your order #12345 has been shipped.": "تم شحن طلبك رقم #12345.",
   "New Discount Available": "خصم جديد متاح",
@@ -38,6 +38,14 @@
   "Home": "الرئيسية",
   "Cart": "عربة",
   "Notifications": "إشعارات",
-  "Profile": "ملف الشخصى"
+  "Profile": "ملف الشخصى",
+  "Oops!": "أُووبس!",
+  "Your cart is empty.": "عربة التسوق الخاصة بك فارغة.",
+  "This screen does not exist.": "عفواً، هذه الشاشة غير موجودة.",
+  "Go to home screen!": "انتقل إلى الشاشة الرئيسية!",
+  "Fullname": "الاسم الكامل",
+  "Confirm Password": "تأكيد كلمة المرور",
+  "Phone Number": "رقم التليفون",
+  "Create an account": "إنشاء حساب "
   
 }

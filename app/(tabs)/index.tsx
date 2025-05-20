@@ -79,7 +79,7 @@ export default function Index() {
  return (
   <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
     <View style={styles.topBar}>
-  <TouchableOpacity onPress={changeLanguage} style={{ backgroundColor: 'blue', padding: 10, borderRadius: 8 }}>
+  <TouchableOpacity onPress={changeLanguage} style={{ backgroundColor: 'brown', padding: 10, borderRadius: 8 }}>
       <Text style={{ color: 'white' }}>
         {i18n.language === 'en' ? 'العربية' : 'English'}
       </Text>

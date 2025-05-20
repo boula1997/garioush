@@ -6,7 +6,9 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import axios from 'axios'; // Make sure axios is installed (`npm install axios`)
+import axios from 'axios'; 
+import { useTranslation } from 'react-i18next';
+
 
 export default function AuthScreen() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function AuthScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showpassword_confirmation, setShowpassword_confirmation] = useState(false);
   const [showCarForm, setShowCarForm] = useState(false);
+  const { t } = useTranslation();
 
   // Auth state
   const [authData, setAuthData] = useState({
@@ -177,8 +180,8 @@ export default function AuthScreen() {
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={styles.header}>
-        <ThemedText style={[styles.title, { color: themeColors.tint }]}>Register</ThemedText>
-        <ThemedText style={styles.subtitle}>Create an account</ThemedText>
+        <ThemedText style={[styles.title, { color: themeColors.tint }]}>{t('Register')}</ThemedText>
+        <ThemedText style={styles.subtitle}>{t('Create an account')}</ThemedText>
       </View>
 
       <View style={styles.form}>
@@ -186,7 +189,7 @@ export default function AuthScreen() {
           <FontAwesome name="envelope" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Email"
+            placeholder={t("Email")}
             placeholderTextColor={themeColors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -199,7 +202,7 @@ export default function AuthScreen() {
           <FontAwesome name="user" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Fullname"
+            placeholder={t("Fullname")}
             placeholderTextColor={themeColors.textSecondary}
             value={authData.fullname}
             onChangeText={(text) => setAuthData({ ...authData, fullname: text })}
@@ -210,7 +213,7 @@ export default function AuthScreen() {
           <FontAwesome name="phone" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Phone Number"
+            placeholder={t("Phone Number")}
             placeholderTextColor={themeColors.textSecondary}
             keyboardType="phone-pad"
             value={authData.phone}
@@ -222,7 +225,7 @@ export default function AuthScreen() {
           <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Password"
+            placeholder={t("Password")}
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showPassword}
             value={authData.password}
@@ -237,7 +240,7 @@ export default function AuthScreen() {
           <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder="Confirm Password"
+            placeholder={t("Confirm Password")}
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showpassword_confirmation}
             value={authData.password_confirmation}
@@ -254,7 +257,7 @@ export default function AuthScreen() {
           disabled={!authData.email || !authData.password || !authData.password_confirmation}
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
-            Register
+            {t('Register')}
           </ThemedText>
         </TouchableOpacity>
       </View>

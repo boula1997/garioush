@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>{t('Login')}</Text>
       <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" />
       <TextInput style={styles.input} placeholder="Password" secureTextEntry />
       <Button title="Login" onPress={() => alert("Login logic goes here!")} />

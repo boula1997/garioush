@@ -146,7 +146,8 @@ export default function TabLayout() {
               if (!isLoggedIn) {
                 e.preventDefault();
                 await playSound();
-                router.push('/login');
+                router.push(t('/login'));
+
               } else {
                 await playSound();
                 navigation.navigate('profile');
