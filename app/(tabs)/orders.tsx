@@ -11,12 +11,14 @@ import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 export default function UserOrdersScreen() {
   const [token, setToken] = useState('');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadTokenAndFetchOrders = async () => {
@@ -71,12 +73,12 @@ export default function UserOrdersScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <ThemedText style={styles.title}>My Orders</ThemedText>
+      <ThemedText style={styles.title}>{t('My Orders')}</ThemedText>
 
       {orders.map((order, index) => (
         <View key={index} style={styles.card}>
           <View style={styles.rowTop}>
-            <ThemedText style={styles.label}>Order #{order.id}</ThemedText>
+            <ThemedText style={styles.label}>{t('Order')} #{order.id}</ThemedText>
             <TouchableOpacity
               onPress={() =>
                 router.push({
@@ -90,15 +92,15 @@ export default function UserOrdersScreen() {
           </View>
 
           <View style={styles.row}>
-            <ThemedText style={styles.key}>Status:</ThemedText>
-            <ThemedText style={styles.value}>{order.status}</ThemedText>
+            <ThemedText style={styles.key}>{t('Status')}:</ThemedText>
+            <ThemedText style={styles.value}>{t(order.status)}</ThemedText>
           </View>
           <View style={styles.row}>
-            <ThemedText style={styles.key}>Total:</ThemedText>
-            <ThemedText style={styles.value}>{order.total} EGP</ThemedText>
+            <ThemedText style={styles.key}>{t('Total')}:</ThemedText>
+            <ThemedText style={styles.value}>{t(order.total)} EGP</ThemedText>
           </View>
           <View style={styles.row}>
-            <ThemedText style={styles.key}>Date:</ThemedText>
+            <ThemedText style={styles.key}>{t('Date')}:</ThemedText>
             <ThemedText style={styles.value}>
               {new Date(order.created_at).toLocaleDateString()}
             </ThemedText>

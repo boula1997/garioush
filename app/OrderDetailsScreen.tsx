@@ -1,44 +1,47 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const OrderDetailsScreen = () => {
   const route = useRoute();
   const order = JSON.parse(route.params.order);
+  const { t } = useTranslation();
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Order Details</Text>
+      <Text style={styles.heading}>{t('Order Details')}</Text>
 
       <View style={styles.section}>
-        <Text style={styles.label}>Order ID:</Text>
-        <Text style={styles.value}>{order.id}</Text>
+        <Text style={styles.label}>{t('Order ID')}:</Text>
+        <Text style={styles.value}>{t(order.id)}</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>Total:</Text>
-        <Text style={styles.value}>{order.total} EGP</Text>
+        <Text style={styles.label}>{t('Total')}:</Text>
+        <Text style={styles.value}>{t(order.total)} EGP</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>Address:</Text>
-        <Text style={styles.value}>{order.address}</Text>
+        <Text style={styles.label}>{t('Address')}:</Text>
+        <Text style={styles.value}>{t(order.address)}</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>Created At:</Text>
+        <Text style={styles.label}>{t('Created At')}:</Text>
         <Text style={styles.value}>{new Date(order.created_at).toLocaleString()}</Text>
       </View>
 
-      <Text style={styles.subHeading}>Products:</Text>
+      <Text style={styles.subHeading}>{t('Products')}:</Text>
 
       {order.orderproducts.map((product, index) => (
         <View key={index} style={styles.productCard}>
           <Image source={{ uri: product.image }} style={styles.productImage} />
           <View style={styles.productInfo}>
-            <Text style={styles.productTitle}>{product.title}</Text>
-            <Text style={styles.productText}>Quantity: {product.count}</Text>
-            <Text style={styles.productText}>Subtotal: {product.total} EGP</Text>
+            <Text style={styles.productTitle}>{t(product.title)}</Text>
+            <Text style={styles.productText}>{t('Quantity')}: {t(product.count)}</Text>
+            <Text style={styles.productText}>{('Subtotal')}: {t(product.total)} EGP</Text>
           </View>
         </View>
       ))}

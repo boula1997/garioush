@@ -3,6 +3,7 @@ import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 const orders = [
   {
@@ -31,10 +32,11 @@ const orders = [
 export default function MyOrdersScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>      
-      <Text style={[styles.header, { color: colors.tint }]}>My Orders</Text>
+      <Text style={[styles.header, { color: colors.tint }]}>{t('My Orders')}</Text>
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id}
@@ -42,9 +44,9 @@ export default function MyOrdersScreen() {
           <View style={[styles.orderCard, { backgroundColor: colors.cardBackground }]}>            
             <Image source={{ uri: item.image }} style={styles.orderImage} />
             <View style={styles.orderDetails}>
-              <Text style={[styles.orderTitle, { color: colors.text }]}>{item.title}</Text>
-              <Text style={[styles.orderStatus, { color: colors.tint }]}>{item.status}</Text>
-              <Text style={[styles.orderPrice, { color: colors.tint }]}>${item.price.toFixed(2)}</Text>
+              <Text style={[styles.orderTitle, { color: colors.text }]}>{t(item.title)}</Text>
+              <Text style={[styles.orderStatus, { color: colors.tint }]}>{t(item.status)}</Text>
+              <Text style={[styles.orderPrice, { color: colors.tint }]}>${t(item.price.toFixed(2))}</Text>
             </View>
             {/* <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} /> */}
           </View>

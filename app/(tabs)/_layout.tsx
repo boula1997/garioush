@@ -146,7 +146,7 @@ export default function TabLayout() {
               if (!isLoggedIn) {
                 e.preventDefault();
                 await playSound();
-                router.push(t('/login'));
+                router.push('/Login');
 
               } else {
                 await playSound();
@@ -155,7 +155,21 @@ export default function TabLayout() {
             },
           })}
         />
-        
+        <Tabs.Screen
+          name="orders"
+          options={{
+            title: t('orders'),
+          tabBarIcon: ({ color }) => (
+      <FontAwesome name="shopping-bag" size={24} color={color} />
+    ),
+          }}
+          listeners={({ navigation }) => ({
+            tabPress: async (e) => {
+              await playSound();
+              navigation.navigate('orders');
+            },
+          })}
+        />
       </Tabs>
     </SafeAreaView>
   );

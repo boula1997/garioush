@@ -3,10 +3,13 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function MyCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+   const { t } = useTranslation();
+
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>      
@@ -18,7 +21,7 @@ export default function MyCarInfoScreen() {
       {/* Car Details */}
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
         {/* Car Title */}
-        <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>Car Details</Text>
+        <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>{t('Car Details')}</Text>
         
         {/* Divider */}
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -27,23 +30,23 @@ export default function MyCarInfoScreen() {
         <View style={styles.detailItem}>
           <MaterialIcons name="directions-car" size={20} color={colors.tint} />
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>Make</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>Toyota</Text>
+            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Make')}</Text>
+            <Text style={[styles.detailText, { color: colors.text }]}>{t('Toyota')}</Text>
           </View>
         </View>
         
         <View style={styles.detailItem}>
           <MaterialIcons name="directions-car" size={20} color={colors.tint} />
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>Model</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>Camry</Text>
+            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Model')}</Text>
+            <Text style={[styles.detailText, { color: colors.text }]}>{t('Camry')}</Text>
           </View>
         </View>
         
         <View style={styles.detailItem}>
           <MaterialIcons name="event" size={20} color={colors.tint} />
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>Year</Text>
+            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Year')}</Text>
             <Text style={[styles.detailText, { color: colors.text }]}>2022</Text>
           </View>
         </View>
@@ -51,7 +54,7 @@ export default function MyCarInfoScreen() {
         <View style={styles.detailItem}>
           <MaterialIcons name="confirmation-number" size={20} color={colors.tint} />
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>License Plate</Text>
+            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('License Plate')}</Text>
             <Text style={[styles.detailText, { color: colors.text }]}>XYZ-1234</Text>
           </View>
         </View>
@@ -59,7 +62,7 @@ export default function MyCarInfoScreen() {
         <View style={styles.detailItem}>
           <MaterialIcons name="fingerprint" size={20} color={colors.tint} />
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>VIN</Text>
+            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('VIN')}</Text>
             <Text style={[styles.detailText, { color: colors.text }]}>1HGCM82633A123456</Text>
           </View>
         </View>

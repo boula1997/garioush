@@ -4,45 +4,47 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfileScreen({ navigation }) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>      
       {/* Profile Header */}
       <View style={styles.profileHeader}>
         <Image source={{ uri: 'https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg' }} style={styles.profileImage} />
-        <Text style={[styles.profileName, { color: colors.text }]}>John Doe</Text>
+        <Text style={[styles.profileName, { color: colors.text }]}>{t('John Doe')}</Text>
       </View>
       
       {/* Profile Options */}
       <View style={styles.menuContainer}>
       <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyProfile')}>
           <MaterialIcons name="person" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>My Profile</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>{t('My Profile')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyOrders')}>
           <MaterialIcons name="shopping-cart" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>My Orders</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>{t('My Orders')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyCarInfo')}>
           <MaterialIcons name="directions-car" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>My Car Info</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>{t('My Car Info')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/EditCarInfo')}>
           <MaterialIcons name="edit" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>Edit My Car Info</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>{t('Edit My Car Info')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/EditProfile')}>
           <MaterialIcons name="settings" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>Edit Profile</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>{t('Edit Profile')}</Text>
         </TouchableOpacity>
       </View>
     </View>

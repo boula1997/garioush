@@ -3,10 +3,12 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView,
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function EditCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+   const { t } = useTranslation();
 
   // State to manage form inputs and image
   const [make, setMake] = useState('Toyota');
@@ -40,26 +42,26 @@ export default function EditCarInfoScreen() {
             <Image source={{ uri: carImage }} style={styles.carImage} />
             <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
               <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
-              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>Upload</Text>
+              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('Upload')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Editable Car Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>Edit Car Details</Text>
+            <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>{t('Edit Car Details')}</Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             {/* Make */}
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="directions-car" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Make</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Make')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={make}
                 onChangeText={setMake}
-                placeholder="Make"
+                placeholder={t('Make')}
                 placeholderTextColor={colors.tint}
               />
             </View>
@@ -68,13 +70,13 @@ export default function EditCarInfoScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="directions-car" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Model</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Model')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={model}
                 onChangeText={setModel}
-                placeholder="Model"
+                placeholder={t('Model')}
                 placeholderTextColor={colors.tint}
               />
             </View>
@@ -83,13 +85,13 @@ export default function EditCarInfoScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="event" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Year</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Year')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={year}
                 onChangeText={setYear}
-                placeholder="Year"
+                placeholder={t('Year')}
                 placeholderTextColor={colors.tint}
               />
             </View>
@@ -98,13 +100,13 @@ export default function EditCarInfoScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="confirmation-number" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>License Plate</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('License Plate')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={licensePlate}
                 onChangeText={setLicensePlate}
-                placeholder="License Plate"
+                placeholder={t('License Plate')}
                 placeholderTextColor={colors.tint}
               />
             </View>
@@ -113,20 +115,20 @@ export default function EditCarInfoScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="fingerprint" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>VIN</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('VIN')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={vin}
                 onChangeText={setVin}
-                placeholder="VIN"
+                placeholder={t('VIN')}
                 placeholderTextColor={colors.tint}
               />
             </View>
 
             {/* Save Button */}
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.tint }]} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={styles.saveButtonText}>{t('Save')}</Text>
             </TouchableOpacity>
           </View>
         </View>

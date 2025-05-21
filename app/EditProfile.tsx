@@ -3,10 +3,12 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView,
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+   const { t } = useTranslation();
 
   // State to manage form inputs and image
   const [name, setName] = useState('John Doe');
@@ -43,26 +45,26 @@ export default function EditProfileScreen() {
             <Image source={{ uri: profileImage }} style={styles.profileImage} />
             <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
               <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
-              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>Upload</Text>
+              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('Upload')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Editable Profile Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>Edit Profile</Text>
+            <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>{t('Edit Profile')}</Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             {/* Name */}
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="person" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Name</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Name')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={name}
                 onChangeText={setName}
-                placeholder="Name"
+                placeholder={t('Name')}
                 placeholderTextColor={colors.tint}
               />
             </View>
@@ -71,13 +73,13 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="email" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Email</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Email')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={email}
                 onChangeText={setEmail}
-                placeholder="Email"
+                placeholder={t('Email')}
                 keyboardType="email-address"
                 placeholderTextColor={colors.tint}
               />
@@ -87,13 +89,13 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="phone" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Phone</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Phone')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={phone}
                 onChangeText={setPhone}
-                placeholder="Phone"
+                placeholder={t('Phone')}
                 keyboardType="phone-pad"
                 placeholderTextColor={colors.tint}
               />
@@ -103,13 +105,13 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="lock" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Password</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Password')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Password"
+                placeholder={t('Password')}
                 secureTextEntry
                 placeholderTextColor={colors.tint}
               />
@@ -119,13 +121,13 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="lock" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Confirm Password</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t('Confirm Password')}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                placeholder="Confirm Password"
+                placeholder={t('Confirm Password')}
                 secureTextEntry
                 placeholderTextColor={colors.tint}
               />
@@ -133,7 +135,7 @@ export default function EditProfileScreen() {
 
             {/* Save Button */}
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.tint }]} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={styles.saveButtonText}>{t('Save')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -10,7 +10,7 @@ export default function LoginScreen() {
       <Text style={styles.title}>{t('Login')}</Text>
       <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" />
       <TextInput style={styles.input} placeholder="Password" secureTextEntry />
-      <Button title="Login" onPress={() => alert("Login logic goes here!")} />
+      <Button title={t('Login')} onPress={() => alert("Login logic goes here!")} />
     </View>
   );
 }
