@@ -1,21 +1,19 @@
+// hooks/useColorScheme.ts
 import { useEffect, useState } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
 
 /**
- * To support static rendering, this value needs to be re-calculated on the client side for web
+ * Returns the current system color scheme ('light' or 'dark').
+ * On web, returns 'light' during static rendering before hydration.
  */
-export function useColorScheme() {
+export function useColorScheme(): 'light' | 'dark' {
   const [hasHydrated, setHasHydrated] = useState(false);
+  const systemColorScheme = useRNColorScheme(); // native hook
 
   useEffect(() => {
     setHasHydrated(true);
   }, []);
 
-  const colorScheme = useRNColorScheme();
-
-  if (hasHydrated) {
-    return colorScheme;
-  }
-
-  return 'light';
+  return hasHydrated ? (systemColorScheme ?? 'light') : 'light';
 }
+

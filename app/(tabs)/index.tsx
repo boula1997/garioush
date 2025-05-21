@@ -19,7 +19,7 @@ import { Alert } from 'react-native';
 export default function Index() {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme ?? 'light'];
+  const themeColors = Colors[colorScheme];
   const [sound, setSound] = useState();
   const [services, setServices] = useState([]);
   const { t } = useTranslation();
@@ -37,6 +37,7 @@ export default function Index() {
 
   useEffect(() => {
     fetchCategories();
+    console.log("color",colorScheme)
   }, []);
 
   const fetchCategories = async () => {

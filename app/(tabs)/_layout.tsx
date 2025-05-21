@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme ?? 'light'];
+  const themeColors = Colors[colorScheme];
   const router = useRouter();
   const [sound, setSound] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);

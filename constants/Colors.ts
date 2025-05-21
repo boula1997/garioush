@@ -13,9 +13,8 @@ export const Colors = {
     cardcheckBackground:"rgba(251, 245, 245, 0.38)"
     
   },
-
   dark: {
-    background: '#FFFFFF',
+    background: '#000000',
     headerBackground: '#FFFFFF',
     tabBarBackground: '#FFFFFF',
     tint: '#8B0000', // 111184
