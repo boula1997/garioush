@@ -10,6 +10,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -18,6 +20,18 @@ export default function TabLayout() {
   const [sound, setSound] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    // Load the login state
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      setIsLoggedIn(!!token); // Set isLoggedIn to true if token exists
+    };
+
+    checkLoginStatus();
+
+    console.log(isLoggedIn);
+  }, []);
 
   // Load the sound effect
   useEffect(() => {
@@ -49,7 +63,7 @@ export default function TabLayout() {
     if (!isLoggedIn) {
       e.preventDefault();
       await playSound();
-      router.push('/login');
+      router.push('login');
     } else {
       await playSound();
     }
@@ -130,13 +144,10 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: t('Profile'),
+            title: isLoggedIn ? t('Profile'): t('Login'),
             tabBarIcon: ({ color }) =>
               isLoggedIn ? (
-                <Image
-                  source={{ uri: 'https://via.placeholder.com/40' }}
-                  style={styles.profileAvatar}
-                />
+              <FontAwesome name="user" size={24} color={color} />
               ) : (
                 <FontAwesome name="user" size={24} color={color} />
               ),
@@ -146,11 +157,11 @@ export default function TabLayout() {
               if (!isLoggedIn) {
                 e.preventDefault();
                 await playSound();
-                router.push('/Login');
+                router.push('login');
 
               } else {
                 await playSound();
-                navigation.navigate('profile');
+                navigation.navigate('/profile');
               }
             },
           })}
