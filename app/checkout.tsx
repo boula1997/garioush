@@ -30,12 +30,20 @@ export default function CheckoutScreen() {
   const [isShippingOpen, setIsShippingOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [token, setToken] = useState('');
+  const [walletBalance, setWalletBalance] = useState(null); // For storing wallet balance
+
+    const paymentMethods = [
+    { id: 'wallet', name: 'Wallet', icon: 'wallet', iconType: FontAwesome },
+    { id: 'card', name: 'Cards', icon: 'credit-card', iconType: FontAwesome },
+    { id: 'stc_pay', name: 'STC Pay', icon: 'mobile', iconType: FontAwesome },
+  ];
 
   useEffect(() => {
     const loadToken = async () => {
       const storedToken = await AsyncStorage.getItem('authToken');
       if (storedToken) {
         setToken(storedToken);
+        fetchUserProfile(storedToken); // Fetch user profile
       } else {
         Alert.alert('Error', 'User not authenticated.');
       }
@@ -43,58 +51,82 @@ export default function CheckoutScreen() {
     loadToken();
   }, []);
 
-  const paymentMethods = [
-    { id: 'wallet', name: 'Wallet', icon: 'wallet', iconType: FontAwesome },
-    { id: 'card', name: 'Cards', icon: 'credit-card', iconType: FontAwesome },
-    { id: 'stc_pay', name: 'STC Pay', icon: 'mobile', iconType: FontAwesome },
-  ];
+  const fetchUserProfile = async (authToken) => {
+    try {
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/user-profile', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data) {
+        console.log("data",data);
+        setWalletBalance(data.balance); // Assuming `wallet_balance` is the key for wallet balance
+      } else {
+        console.error('Error fetching profile:', data.message || 'Unknown error');
+        Alert.alert('Error', 'Failed to fetch user profile.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'Something went wrong while fetching user profile.');
+    }
+  };
 
   const calculateTotal = () => {
     return parsedCartData
       .reduce((total, item) => total + parseFloat(item.price) * (item.quantity ?? 1), 0)
-      .toFixed(2);
+      ;
   };
 
-  const handleCheckout = async () => {
-    if (!address || !mobile) {
-      Alert.alert('Missing Info', 'Please fill out all fields!');
-      return;
-    }
-  
-    try {
-      const response = await fetch(
-        'https://yousab-tech.com/groshy/public/api/auth/order/store',
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            address: address,
-            paymentMethod: selectedPayment,
-          }),
-        }
-      );
-  
-      const data = await response.json();
-  
-      console.log('API Full Response:',data); // 🔍 Inspect full data
-      if (response.ok && data.order) {
+const handleCheckout = async () => {
+  if (!address || !mobile) {
+    Alert.alert('Missing Info', 'Please fill out all fields!');
+    return;
+  }
 
-        router.push({
-          pathname: '/OrderDetailsScreen',
-          params: { order: JSON.stringify(data.order) },
-        });
+  try {
+    const response = await fetch(
+      'https://yousab-tech.com/groshy/public/api/auth/order/store',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address: address,
+          paymentMethod: selectedPayment,
+        }),
+      }
+    );
+
+    const data = await response.json();
+     console.log(data);
+    if (response.ok && data.order) {
+      router.push({
+        pathname: '/OrderDetailsScreen',
+        params: { order: JSON.stringify(data.order) },
+      });
+    } else {
+      // Check for NoEnoughBalance error
+      if (data?.errors?.message === "NoEnoughBalance") {
+        console.log("Insufficient Balance", "You do not have enough balance in your wallet.");
+        Alert.alert("Insufficient Balance", "You do not have enough balance in your wallet.");
       } else {
         Alert.alert('Order Failed', data.success || data.message || 'Please try again.');
       }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Something went wrong.');
     }
-  };
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Error', 'Something went wrong.');
+  }
+};
+
   
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -182,7 +214,7 @@ export default function CheckoutScreen() {
                     { color: selectedPayment === method.id ? colors.tint : colors.text },
                   ]}
                 >
-                  {method.name}
+                  {method.name} {method.id=="wallet"?walletBalance:""}
                 </Text>
                 {selectedPayment === method.id && (
                   <FontAwesome name="check-circle" size={20} color={colors.tint} style={styles.checkIcon} />
