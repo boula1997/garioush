@@ -1,49 +1,114 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MyProfileScreen() {
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { t } = useTranslation();
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const getTokenAndFetchData = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        console.log('Retrieved Token:', storedToken); // Log token
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+
+    getTokenAndFetchData();
+  }, []);
+
+  const fetchProfileData = async (authToken) => {
+    try {
+      console.log('Fetching profile with token:', authToken); // Debug token usage
+      const response = await fetch(
+        'https://yousab-tech.com/groshy/public/api/auth/user-profile',
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setProfileData(data);
+    } catch (err) {
+      console.error('Error fetching profile data:', err.message); // Log full error
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchProfileData(token);
+    }
+  }, [token]);
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          {t('Error fetching profile data:')} {error}
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>      
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Profile Header */}
       <View style={styles.profileHeader}>
-        <Image source={{ uri: 'https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg' }} style={styles.profileImage} />
-        <Text style={[styles.profileName, { color: colors.tint }]}>{t('John Doe')}</Text>
-        <Text style={[styles.profileSubtitle, { color: colors.tint }]}>{t('Software Engineer')}</Text>
+        <Image
+          source={{ uri: profileData?.image }}
+          style={styles.profileImage}
+        />
+        <Text style={[styles.profileName, { color: colors.tint }]}>
+          {profileData?.fullname || t('No Name')}
+        </Text>
+        <Text style={[styles.profileSubtitle, { color: colors.tint }]}>
+          {t('User')}
+        </Text>
       </View>
-      
+
       {/* Profile Details */}
-      <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>        
+      <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.detailItem}>
           <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Email')} :-</Text>
-          <Text style={[styles.detailText, { color: colors.text }]}>johndoe@example.com</Text>
+          <Text style={[styles.detailText, { color: colors.text }]}>
+            {profileData?.email || t('Not Provided')}
+          </Text>
         </View>
         <View style={styles.detailItem}>
           <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Phone')} :-</Text>
-          <Text style={[styles.detailText, { color: colors.text }]}>+1 234 567 890</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Address')} :-</Text>
-          <Text style={[styles.detailText, { color: colors.text }]}>{t('123 Main Street, City, Country')}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Gender')} :-</Text>
-          <Text style={[styles.detailText, { color: colors.text }]}>{t('Male')}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Date of Birth')} :-</Text>
-          <Text style={[styles.detailText, { color: colors.text }]}>{t('Jan 1, 1990')}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Membership')} :-</Text>
-          <Text style={[styles.detailText, { color: colors.text }]}>{t('Premium')}</Text>
+          <Text style={[styles.detailText, { color: colors.text }]}>
+            {profileData?.phone || t('Not Provided')}
+          </Text>
         </View>
       </View>
     </View>
@@ -54,6 +119,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   profileHeader: {
     alignItems: 'center',

@@ -4,7 +4,8 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -17,21 +18,107 @@ export default function EditProfileScreen() {
   const [profileImage, setProfileImage] = useState('https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  const handleSave = () => {
+  const [token, setToken] = useState(null);
+    const [profileData, setProfileData] = useState(null);
+  
+  const handleSave = async () => {
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      alert(t("Passwords don't match!"));
       return;
     }
-    // Logic to save the updated profile information
-    console.log('Profile info saved:', { name, email, phone, password });
+
+    useEffect(() => {
+      const getTokenAndFetchData = async () => {
+        try {
+          const storedToken = await AsyncStorage.getItem('authToken');
+          console.log('Retrieved Token:', storedToken);
+          if (storedToken) {
+            setToken(storedToken);
+          }
+        } catch (error) {
+          console.error('Error retrieving token:', error);
+          Alert.alert(t('Error'), t('Failed to retrieve token.'));
+        }
+      };
+  
+      getTokenAndFetchData();
+    }, []);
+
+
+      const fetchProfileData = async (authToken) => {
+        try {
+          console.log('Fetching profile with token:', authToken);
+          const response = await fetch(
+            'https://yousab-tech.com/groshy/public/api/auth/user-profile',
+            {
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+              },
+            }
+          );
+    
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+          }
+    
+          const data = await response.json();
+          console.log(data);
+          setProfileData(data);
+        } catch (err) {
+          console.error('Error fetching profile data:', err.message);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      useEffect(() => {
+        if (token) {
+          fetchProfileData(token);
+        }
+      }, [token]);
+
+
+     try {
+      const response = await axios.post(
+        'https://yousab-tech.com/groshy/public/api/auth/profile/update',
+        {
+          fullname: name,
+          email,
+          phone,
+          password,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.status) {
+        alert(t(response.data.message));
+        const updatedData = response.data.data;
+        setName(updatedData.fullname);
+        setEmail(updatedData.email);
+        setPhone(updatedData.phone);
+        setProfileImage(updatedData.image);
+      } else {
+        alert(t('Failed to update profile.'));
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert(t('An error occurred. Please try again.'));
+    }
   };
 
-  const handleImageUpload = () => {
-    // Logic for uploading a new profile image (open image picker, etc.)
+
+  const handleImageUpload = async () => {
+    // Implement logic for uploading the image
     console.log('Upload new profile image');
-    setProfileImage('https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg'); // For demo purposes, updating with a new image URL
+    // Example logic to update profile image state
+    setProfileImage('https://example.com/new-image.jpg');
   };
+
 
   return (
     <KeyboardAvoidingView
@@ -42,7 +129,7 @@ export default function EditProfileScreen() {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Profile Image */}
           <View style={styles.profileImageContainer}>
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            <Image source={{ uri: profileData?.image  }} style={styles.profileImage} />
             <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
               <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
               <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('Upload')}</Text>
