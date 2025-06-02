@@ -1,124 +1,146 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-   const { t } = useTranslation();
+  const { t } = useTranslation();
 
   // State to manage form inputs and image
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('john.doe@example.com');
   const [phone, setPhone] = useState('+1234567890');
+  const [token, setToken] = useState(null);
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const [profileImage, setProfileImage] = useState('https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [token, setToken] = useState(null);
-    const [profileData, setProfileData] = useState(null);
-  
-  const handleSave = async () => {
-    if (password !== confirmPassword) {
-      alert(t("Passwords don't match!"));
-      return;
-    }
 
-    useEffect(() => {
-      const getTokenAndFetchData = async () => {
-        try {
-          const storedToken = await AsyncStorage.getItem('authToken');
-          console.log('Retrieved Token:', storedToken);
-          if (storedToken) {
-            setToken(storedToken);
-          }
-        } catch (error) {
-          console.error('Error retrieving token:', error);
-          Alert.alert(t('Error'), t('Failed to retrieve token.'));
+  useEffect(() => {
+    const getTokenAndFetchData = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        console.log('Retrieved Token:', storedToken); // Log token
+        if (storedToken) {
+          setToken(storedToken);
         }
-      };
-  
-      getTokenAndFetchData();
-    }, []);
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
 
+    getTokenAndFetchData();
+  }, []);
 
-      const fetchProfileData = async (authToken) => {
-        try {
-          console.log('Fetching profile with token:', authToken);
-          const response = await fetch(
-            'https://yousab-tech.com/groshy/public/api/auth/user-profile',
-            {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-              },
-            }
-          );
-    
-          if (!response.ok) {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-          }
-    
-          const data = await response.json();
-          console.log(data);
-          setProfileData(data);
-        } catch (err) {
-          console.error('Error fetching profile data:', err.message);
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-    
-      useEffect(() => {
-        if (token) {
-          fetchProfileData(token);
-        }
-      }, [token]);
-
-
-     try {
-      const response = await axios.post(
-        'https://yousab-tech.com/groshy/public/api/auth/profile/update',
-        {
-          fullname: name,
-          email,
-          phone,
-          password,
-        },
+  const fetchProfileData = async (authToken) => {
+    try {
+      console.log('Fetching profile with token:', authToken);
+      const response = await fetch(
+        'https://yousab-tech.com/groshy/public/api/auth/user-profile',
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
 
-      if (response.data.status) {
-        alert(t(response.data.message));
-        const updatedData = response.data.data;
-        setName(updatedData.fullname);
-        setEmail(updatedData.email);
-        setPhone(updatedData.phone);
-        setProfileImage(updatedData.image);
-      } else {
-        alert(t('Failed to update profile.'));
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
       }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert(t('An error occurred. Please try again.'));
+
+      const data = await response.json();
+      console.log('Fetched profile data:', data);
+      setProfileData(data); // Assuming 'data' contains the required profile details
+      console.log(profileData);
+    } catch (err) {
+      console.error('Error fetching profile data:', err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (token) {
+      fetchProfileData(token);
+      console.log("profileData", profileData);
 
-  const handleImageUpload = async () => {
-    // Implement logic for uploading the image
-    console.log('Upload new profile image');
-    // Example logic to update profile image state
-    setProfileImage('https://example.com/new-image.jpg');
+    }
+  }, [token]);
+
+  const handleSave = async () => {
+    if (password !== confirmPassword) {
+      alert("Passwords don't match!");
+      return;
+    }
+
+    try {
+      // Create a FormData object to handle both text and file data
+      const formData = new FormData();
+      formData.append('fullname', name);
+      formData.append('email', email);
+      formData.append('phone', phone);
+      if (profileImage) {
+        const filename = profileImage.split('/').pop();
+        const type = `image/${filename.split('.').pop()}`;
+        formData.append('image', {
+          uri: profileImage,
+          name: filename,
+          type: type,
+        });
+      }
+      if (password) {
+        formData.append('password', password);
+      }
+
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/profile/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          // Do not include 'Content-Type' when using FormData; the browser sets it automatically
+        },
+        body: formData,
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Error updating profile');
+      }
+
+      alert(responseData.message || 'Profile updated successfully');
+      console.log('Updated profile data:', responseData.data);
+
+      // Optionally update local state with the updated profile data
+      setProfileData(responseData.data);
+    } catch (error) {
+      console.error('Error updating profile:', error.message);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
+  useEffect(() => {
+  if (profileData) {
+    setName(profileData.fullname || '');
+    setEmail(profileData.email || '');
+    setPhone(profileData.phone || '');
+  }
+}, [profileData]);
+
+
+
+  const handleImageUpload = () => {
+    // Logic for uploading a new profile image (open image picker, etc.)
+    console.log('Upload new profile image');
+    setProfileImage('https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg'); // For demo purposes, updating with a new image URL
+  };
 
   return (
     <KeyboardAvoidingView
@@ -129,7 +151,7 @@ export default function EditProfileScreen() {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Profile Image */}
           <View style={styles.profileImageContainer}>
-            <Image source={{ uri: profileData?.image  }} style={styles.profileImage} />
+            <Image source={{ uri: profileData?.image }} style={styles.profileImage} />
             <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
               <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
               <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('Upload')}</Text>
@@ -141,52 +163,32 @@ export default function EditProfileScreen() {
             <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>{t('Edit Profile')}</Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-            {/* Name */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="person" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Name')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={name}
-                onChangeText={setName}
-                placeholder={t('Name')}
-                placeholderTextColor={colors.tint}
-              />
-            </View>
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={name} // Use `name` instead of `profileData?.fullname`
+              onChangeText={setName}
+              placeholder={t('Name')}
+              placeholderTextColor={colors.tint}
+            />
 
-            {/* Email */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="email" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Email')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={email}
-                onChangeText={setEmail}
-                placeholder={t('Email')}
-                keyboardType="email-address"
-                placeholderTextColor={colors.tint}
-              />
-            </View>
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={email} // Use `email` instead of `profileData?.email`
+              onChangeText={setEmail}
+              placeholder={t('Email')}
+              keyboardType="email-address"
+              placeholderTextColor={colors.tint}
+            />
 
-            {/* Phone */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="phone" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Phone')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder={t('Phone')}
-                keyboardType="phone-pad"
-                placeholderTextColor={colors.tint}
-              />
-            </View>
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={phone} // Use `phone` instead of `profileData?.phone`
+              onChangeText={setPhone}
+              placeholder={t('Phone')}
+              keyboardType="phone-pad"
+              placeholderTextColor={colors.tint}
+            />
+
 
             {/* Password */}
             <View style={styles.inputItem}>
