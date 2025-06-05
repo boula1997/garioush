@@ -8,7 +8,6 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 
-
 export default function LoginScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -16,40 +15,42 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-   const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        'https://yousab-tech.com/groshy/public/api/auth/login',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
 
       if (data.success) {
-        // Store the token in localStorage
         await AsyncStorage.setItem('authToken', data.token);
-
-        // Navigate to the main screen
         router.push('/profile');
       } else {
-        Alert.alert('Login Failed', 'Invalid email or password.');
+        Alert.alert(t('Login Failed'), t('Invalid email or password.'));
       }
     } catch (error) {
       console.error('Login Error:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      Alert.alert(t('Error'), t('Something went wrong. Please try again later.'));
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={styles.header}>
-        <ThemedText style={[styles.title, { color: themeColors.tint }]}>{t('Login')}</ThemedText>
-        <ThemedText style={styles.subtitle}>{t('Welcome back')}</ThemedText>
+        <ThemedText style={[styles.title, { color: themeColors.tint }]}>
+          {t('Login')}
+        </ThemedText>
+        <ThemedText style={[styles.subtitle, { color: themeColors.textSecondary }]}>
+          {t('Welcome back')}
+        </ThemedText>
       </View>
 
       <View style={styles.form}>
@@ -63,6 +64,8 @@ export default function LoginScreen() {
             autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
+            importantForAutofill="yes"
+            autoComplete="email"
           />
         </View>
 
@@ -75,10 +78,13 @@ export default function LoginScreen() {
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
+            importantForAutofill="yes"
+            autoComplete="password"
           />
           <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
+            accessibilityLabel={showPassword ? t('Hide password') : t('Show password')}
           >
             <FontAwesome
               name={showPassword ? 'eye' : 'eye-slash'}
@@ -91,6 +97,7 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={[styles.button, { backgroundColor: themeColors.tint }]}
           onPress={handleLogin}
+          activeOpacity={0.8}
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
             {t('Login')}
@@ -100,15 +107,14 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.registerLink}
           onPress={() => router.push('/register')}
+          activeOpacity={0.6}
         >
-        <ThemedText style={[styles.registerText, { color: themeColors.tint }]}>
-  {t('Do not have an account?')}{" "}
-  <ThemedText style={{ color: themeColors.tint, fontWeight: 'bold' }}>
-    {t('Register')}
-  </ThemedText>
-</ThemedText>
-
-
+          <ThemedText style={[styles.registerText, { color: themeColors.textSecondary }]}>
+            {t('Do not have an account?')}{' '}
+            <ThemedText style={{ color: themeColors.tint, fontWeight: 'bold' }}>
+              {t('Register')}
+            </ThemedText>
+          </ThemedText>
         </TouchableOpacity>
       </View>
     </View>

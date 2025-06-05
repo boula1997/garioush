@@ -1,3 +1,4 @@
+// No changes here
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -5,7 +6,8 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  StyleSheet
+  StyleSheet,
+  Platform
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -133,7 +135,8 @@ export default function CartScreen() {
         styles.cartItem,
         {
           backgroundColor: colors.cardBackground,
-          borderColor: colors.border
+          borderColor: colors.border,
+          shadowColor: colors.shadow
         }
       ]}
     >
@@ -186,9 +189,19 @@ export default function CartScreen() {
           </Text>
         }
       />
-      <View style={styles.totalContainer}>
+      <View
+        style={[
+          styles.totalContainer,
+          {
+            backgroundColor: colors.cardBackground,
+            borderColor: colors.border,
+            shadowColor: colors.shadow
+          }
+        ]}
+      >
         <Text style={[styles.totalText, { color: colors.text }]}>
-          {t('Subtotal')} <Text style={{ color: colors.tint }}>${total.toFixed(2)}</Text>
+          {t('Subtotal')}{' '}
+          <Text style={{ color: colors.tint }}>${total.toFixed(2)}</Text>
         </Text>
         <TouchableOpacity
           style={[styles.checkoutButton, { backgroundColor: colors.tint }]}
@@ -213,7 +226,17 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
-    borderWidth: 1
+    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5
+      },
+      android: {
+        elevation: 3
+      }
+    })
   },
   image: {
     width: 70,
@@ -251,9 +274,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderColor: '#ccc'
+    ...Platform.select({
+      ios: {
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5
+      },
+      android: {
+        elevation: 10
+      }
+    })
   },
   totalText: {
     fontSize: 18,

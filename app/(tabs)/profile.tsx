@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
@@ -22,22 +23,18 @@ export default function ProfileScreen() {
     const getTokenAndFetchData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('authToken');
-        console.log('Retrieved Token:', storedToken);
         if (storedToken) {
           setToken(storedToken);
         }
       } catch (error) {
-        console.error('Error retrieving token:', error);
         Alert.alert(t('Error'), t('Failed to retrieve token.'));
       }
     };
-
     getTokenAndFetchData();
   }, []);
 
   const fetchProfileData = async (authToken) => {
     try {
-      console.log('Fetching profile with token:', authToken);
       const response = await fetch(
         'https://yousab-tech.com/groshy/public/api/auth/user-profile',
         {
@@ -52,10 +49,8 @@ export default function ProfileScreen() {
       }
 
       const data = await response.json();
-      console.log(data);
       setProfileData(data);
     } catch (err) {
-      console.error('Error fetching profile data:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -70,18 +65,28 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }]}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+        ]}
+      >
         <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={{ color: colors.text, marginTop: 10 }}>{t('Loading...')}</Text>
+        <ThemedText style={{ marginTop: 10 }}>{t('Loading...')}</ThemedText>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>{t('Failed to load profile.')}</Text>
-        <Text style={{ color: colors.text }}>{t(error)}</Text>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+        ]}
+      >
+        <ThemedText>{t('Failed to load profile.')}</ThemedText>
+        <ThemedText>{t(error)}</ThemedText>
       </View>
     );
   }
@@ -92,41 +97,36 @@ export default function ProfileScreen() {
       <View style={styles.profileHeader}>
         <Image
           source={{
-            uri: profileData?.image || 'https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg',
+            uri:
+              profileData?.image ||
+              'https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg',
           }}
           style={styles.profileImage}
         />
-        <Text style={[styles.profileName, { color: colors.text }]}>
+        <ThemedText style={styles.profileName}>
           {profileData?.fullname || t('John Doe')}
-        </Text>
+        </ThemedText>
       </View>
 
       {/* Profile Options */}
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyProfile')}>
-          <MaterialIcons name="person" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>{t('My Profile')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/orders')}>
-          <MaterialIcons name="shopping-cart" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>{t('My Orders')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/MyCarInfo')}>
-          <MaterialIcons name="directions-car" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>{t('My Car Info')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/EditCarInfo')}>
-          <MaterialIcons name="edit" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>{t('Edit My Car Info')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/EditProfile')}>
-          <MaterialIcons name="settings" size={24} color={colors.tint} />
-          <Text style={[styles.menuText, { color: colors.text }]}>{t('Edit Profile')}</Text>
-        </TouchableOpacity>
+        {[
+          { icon: 'person', label: 'My Profile', route: '/MyProfile' },
+          { icon: 'shopping-cart', label: 'My Orders', route: '/orders' },
+          { icon: 'directions-car', label: 'My Car Info', route: '/MyCarInfo' },
+          { icon: 'edit', label: 'Edit My Car Info', route: '/EditCarInfo' },
+          { icon: 'settings', label: 'Edit Profile', route: '/EditProfile' },
+        ].map(({ icon, label, route }) => (
+          <TouchableOpacity
+            key={label}
+            style={[styles.menuItem, { backgroundColor: colors.cardBackground }]}
+            onPress={() => router.push(route)}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name={icon} size={24} color={colors.tint} />
+            <ThemedText style={styles.menuText}>{t(label)}</ThemedText>
+          </TouchableOpacity>
+        ))}
       </View>
     </View>
   );
@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 10,
+    backgroundColor: '#ccc',
   },
   profileName: {
     fontSize: 20,
@@ -160,7 +161,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 10,
-    backgroundColor: '#f5f5f5',
   },
   menuText: {
     fontSize: 16,

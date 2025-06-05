@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
+import { ThemedText } from '@/components/ThemedText';
 
 const notifications = [
   {
@@ -25,7 +26,7 @@ const notifications = [
     description: 'Your payment for order #12345 has been received.',
     time: '1 day ago',
     image: 'https://cdn-icons-png.flaticon.com/512/1828/1828640.png',
-  }
+  },
 ];
 
 export default function NotificationScreen() {
@@ -33,20 +34,46 @@ export default function NotificationScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { t } = useTranslation();
 
+  // Dynamic styles based on theme
+  const dynamicStyles = StyleSheet.create({
+    notificationItem: {
+      backgroundColor: colors.cardBackground,
+      shadowColor: colorScheme === 'light' ? '#000' : '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: colorScheme === 'light' ? 0.1 : 0.3,
+      shadowRadius: 3,
+      elevation: colorScheme === 'light' ? 2 : 6, // for Android shadow
+    },
+    description: {
+      color: colors.textSecondary,
+      opacity: colorScheme === 'light' ? 0.8 : 0.6,
+    },
+    time: {
+      color: colors.textSecondary,
+      opacity: colorScheme === 'light' ? 0.6 : 0.5,
+    },
+  });
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>      
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={[styles.notificationItem, { backgroundColor: colors.cardBackground }]}>            
-            <Image source={{ uri: item.image }} style={styles.image} />
+          <TouchableOpacity activeOpacity={0.7} style={[styles.notificationItem, dynamicStyles.notificationItem]}>
+            <Image
+              source={{ uri: item.image }}
+              style={styles.image}
+              resizeMode="contain"
+              // optional: add a background color placeholder for images
+              defaultSource={'@/assets/imagePlaceholder.png'} // if you have one
+            />
             <View style={styles.textContainer}>
-              <Text style={[styles.title, { color: colors.text }]}>{t(item.title)}</Text>
-              <Text style={[styles.description, { color: colors.textSecondary }]}>{t(item.description)}</Text>
-              <Text style={[styles.time, { color: colors.textSecondary }]}>{t(item.time)}</Text>
+              <ThemedText style={[styles.title, { color: colors.text }]}>{t(item.title)}</ThemedText>
+              <ThemedText style={[styles.description, dynamicStyles.description, { color: colors.text }]}>{t(item.description)}</ThemedText>
+              <ThemedText style={[styles.time, dynamicStyles.time, { color: colors.text }]}>{t(item.time)}</ThemedText>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>
@@ -70,6 +97,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 12,
+    backgroundColor: 'transparent',
   },
   textContainer: {
     flex: 1,
@@ -85,6 +113,5 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 12,
     marginTop: 4,
-    opacity: 0.7,
   },
 });

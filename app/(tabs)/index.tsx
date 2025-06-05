@@ -102,16 +102,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  card: {
-    width: '47%',
-    borderRadius: 16,
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 4,
-    marginBottom: 20,
-    borderWidth: 1,
-  },
+card: {
+  width: '47%',
+  backgroundColor: '#fff',
+  borderRadius: 20,
+  padding: 6,
+  marginBottom: 20,
+  borderWidth: 0,
+  // iOS Shadow
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.1,
+  shadowRadius: 6,
+  // Android Elevation
+  elevation: 4,
+},
+
   cardInner: {
     alignItems: 'center',
     justifyContent: 'center',

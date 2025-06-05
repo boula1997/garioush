@@ -127,7 +127,7 @@ export default function TabLayout() {
           })}
         />
 
-        <Tabs.Screen
+        {/* <Tabs.Screen
           name="notifications"
           options={{
             title: t('Notifications'),
@@ -139,7 +139,7 @@ export default function TabLayout() {
               navigation.navigate('notifications');
             },
           })}
-        />
+        /> */}
 
         <Tabs.Screen
           name="profile"

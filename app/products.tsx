@@ -16,6 +16,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function ProductsScreen() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function ProductsScreen() {
       });
 
       const json = await response.json();
-       console.log(json);
+      console.log(json);
       if (json.success) {
         Alert.alert('تم إضافة المنتج إلى العربة', `الإجمالي: ${json.total} جنيه`);
       } else {
@@ -100,7 +101,7 @@ export default function ProductsScreen() {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOption === 'price-low') return a.price - b.price;
     if (sortOption === 'price-high') return b.price - a.price;
-    if (sortOption === 'rating') return b.rate - a.rate;
+    // Removed rating sorting
     return 0;
   });
 
@@ -140,13 +141,13 @@ export default function ProductsScreen() {
       </View>
 
       <View style={styles.actionRow}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.cardBackground }]}
           onPress={() => setShowFilters(true)}
         >
           <MaterialIcons name="filter-list" size={18} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.tint }]}>Filters</Text>
-        </TouchableOpacity>
+          <ThemedText style={[styles.actionText, { color: colors.tint }]}>Filters</ThemedText>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.cardBackground }]}
@@ -154,16 +155,16 @@ export default function ProductsScreen() {
             setSortOption(prev =>
               prev === 'default' ? 'price-low' :
                 prev === 'price-low' ? 'price-high' :
-                  prev === 'price-high' ? 'rating' : 'default'
+                  'default'
             );
           }}
         >
           <MaterialIcons name="sort" size={18} color={colors.tint} />
-          <Text style={[styles.actionText, { color: colors.tint }]}>
+          <ThemedText style={[styles.actionText, { color: colors.tint }]}>
             Sort: {sortOption === 'default' ? 'Default' :
               sortOption === 'price-low' ? 'Price Low' :
-                sortOption === 'price-high' ? 'Price High' : 'Rating'}
-          </Text>
+                'Price High'}
+          </ThemedText>
         </TouchableOpacity>
       </View>
 
@@ -181,23 +182,15 @@ export default function ProductsScreen() {
               resizeMode="contain"
             />
             <View style={styles.productInfo}>
-              <Text style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
-              <Text style={[styles.productDesc, { color: colors.textSecondary }]}>{item.description}</Text>
-              <View style={styles.priceRatingContainer}>
-                <Text style={[styles.productPrice, { color: colors.tint }]}>
-                  ${item.price.toFixed(2)}
-                </Text>
-                <View style={styles.ratingContainer}>
-                  <FontAwesome name="star" size={14} color="#FFD700" />
-                  <Text style={[styles.ratingText, { color: colors.textSecondary }]}>
-                    {item.rate.toFixed(1)}
-                  </Text>
-                </View>
-              </View>
+              <ThemedText style={[styles.productName, { color: colors.text }]}>{item.title}</ThemedText>
+              <ThemedText style={[styles.productDesc, { color: colors.textSecondary }]}>{item.description}</ThemedText>
+              <ThemedText style={[styles.productPrice, { color: colors.tint }]}>
+                ${item.price.toFixed(2)}
+              </ThemedText>
               {item.details?.noOfKilos && (
-                <Text style={{ color: colors.textSecondary }}>
+                <ThemedText style={{ color: colors.textSecondary }}>
                   Size: {item.details.noOfKilos} kg
-                </Text>
+                </ThemedText>
               )}
             </View>
             <TouchableOpacity
@@ -249,10 +242,7 @@ const styles = StyleSheet.create({
   productInfo: { flex: 1, justifyContent: 'center' },
   productName: { fontSize: 16, fontWeight: 'bold' },
   productDesc: { fontSize: 14 },
-  priceRatingContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   productPrice: { fontSize: 16, fontWeight: 'bold' },
-  ratingContainer: { flexDirection: 'row', alignItems: 'center' },
-  ratingText: { marginLeft: 4, fontSize: 14 },
   cartButton: {
     position: 'absolute', right: 10, bottom: 10,
     padding: 8, borderRadius: 20

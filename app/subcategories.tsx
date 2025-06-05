@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 export default function SubCategoriesScreen() {
   const router = useRouter();
-  const { category } = useLocalSearchParams(); // category ID from query params
+  const { category } = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
   const [sound, setSound] = useState<any>();
@@ -54,12 +54,15 @@ export default function SubCategoriesScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.gridContainer}>
         {subcategories.map((subcategory: any, index) => (
           <TouchableOpacity
             key={index}
-            style={styles.card}
+            style={[styles.card, { backgroundColor: themeColors.cardBackground }]}
             onPress={() => handleSubcategoryPress(subcategory.id)}
           >
             <View style={styles.cardInner}>
@@ -88,7 +91,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '47%',
-    backgroundColor: '#fff',
     borderRadius: 16,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -112,13 +114,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
     marginBottom: 4,
     textAlign: 'center',
   },
   cardDescription: {
     fontSize: 13,
-    color: '#666',
     textAlign: 'center',
   },
 });
