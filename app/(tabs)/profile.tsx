@@ -109,25 +109,63 @@ export default function ProfileScreen() {
       </View>
 
       {/* Profile Options */}
-      <View style={styles.menuContainer}>
-        {[
-          { icon: 'person', label: 'My Profile', route: '/MyProfile' },
-          { icon: 'shopping-cart', label: 'My Orders', route: '/orders' },
-          { icon: 'directions-car', label: 'My Car Info', route: '/MyCarInfo' },
-          { icon: 'edit', label: 'Edit My Car Info', route: '/EditCarInfo' },
-          { icon: 'settings', label: 'Edit Profile', route: '/EditProfile' },
-        ].map(({ icon, label, route }) => (
-          <TouchableOpacity
-            key={label}
-            style={[styles.menuItem, { backgroundColor: colors.cardBackground }]}
-            onPress={() => router.push(route)}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name={icon} size={24} color={colors.tint} />
-            <ThemedText style={styles.menuText}>{t(label)}</ThemedText>
-          </TouchableOpacity>
-        ))}
-      </View>
+<View style={styles.menuContainer}>
+  {[
+    { icon: 'person', label: 'My Profile', route: '/MyProfile' },
+    { icon: 'shopping-cart', label: 'My Orders', route: '/orders' },
+    { icon: 'directions-car', label: 'My Car Info', route: '/MyCarInfo' },
+    { icon: 'edit', label: 'Edit My Car Info', route: '/EditCarInfo' },
+    { icon: 'settings', label: 'Edit Profile', route: '/EditProfile' },
+  ].map(({ icon, label, route }) => (
+    <TouchableOpacity
+      key={label}
+      style={[styles.menuItem, { backgroundColor: colors.cardBackground }]}
+      onPress={() => router.push(route)}
+      activeOpacity={0.7}
+    >
+      <MaterialIcons name={icon} size={24} color={colors.tint} />
+      <ThemedText style={styles.menuText}>{t(label)}</ThemedText>
+    </TouchableOpacity>
+  ))}
+
+  {/* Logout Option */}
+  <TouchableOpacity
+    style={[styles.menuItem, { backgroundColor: colors.cardBackground }]}
+   onPress={async () => {
+  try {
+    const storedToken = await AsyncStorage.getItem('authToken');
+
+    if (!storedToken) {
+      throw new Error('Token not found.');
+    }
+
+    const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${storedToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Logout failed.');
+    }
+
+    await AsyncStorage.removeItem('authToken');
+    router.replace('/login');
+  } catch (error) {
+    Alert.alert(t('Error'), t(error.message || 'Failed to log out.'));
+  }
+}}
+
+    activeOpacity={0.7}
+  >
+    <MaterialIcons name="logout" size={24} color={colors.tint} />
+    <ThemedText style={styles.menuText}>{t('Logout')}</ThemedText>
+  </TouchableOpacity>
+</View>
+
     </View>
   );
 }

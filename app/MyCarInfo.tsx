@@ -1,73 +1,87 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MyCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-   const { t } = useTranslation();
+  const { t } = useTranslation();
 
+  const [carInfo, setCarInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      fetch('https://yousab-tech.com/groshy/public/api/auth/carProfile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("boula",data);
+          setCarInfo(data.data);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    };
+
+    fetchData();
+  }, []);
+
+
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </View>
+    );
+  }
+
+  if (!carInfo) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: colors.text }}>{t('Failed to load car information.')}</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>      
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Car Image */}
       <View style={styles.carImageContainer}>
         <Image source={{ uri: 'https://ymimg1.b8cdn.com/uploads/car_model/10892/pictures/13615159/Toyota-Camry-2025-Exterior-1.jpg' }} style={styles.carImage} />
       </View>
-      
+
       {/* Car Details */}
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-        {/* Car Title */}
         <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>{t('Car Details')}</Text>
-        
-        {/* Divider */}
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        
-        {/* Detail Items */}
-        <View style={styles.detailItem}>
-          <MaterialIcons name="directions-car" size={20} color={colors.tint} />
-          <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Make')}</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>{t('Toyota')}</Text>
+
+        {Object.entries(carInfo).map(([key, value]) => (
+          <View style={styles.detailItem} key={key}>
+            <MaterialIcons name="info" size={20} color={colors.tint} />
+            <View style={styles.detailTextContainer}>
+              <Text style={[styles.detailTitle, { color: colors.tint }]}>{t(key)}</Text>
+              <Text style={[styles.detailText, { color: colors.text }]}>{value}</Text>
+            </View>
           </View>
-        </View>
-        
-        <View style={styles.detailItem}>
-          <MaterialIcons name="directions-car" size={20} color={colors.tint} />
-          <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Model')}</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>{t('Camry')}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.detailItem}>
-          <MaterialIcons name="event" size={20} color={colors.tint} />
-          <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Year')}</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>2022</Text>
-          </View>
-        </View>
-        
-        <View style={styles.detailItem}>
-          <MaterialIcons name="confirmation-number" size={20} color={colors.tint} />
-          <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('License Plate')}</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>XYZ-1234</Text>
-          </View>
-        </View>
-        
-        <View style={styles.detailItem}>
-          <MaterialIcons name="fingerprint" size={20} color={colors.tint} />
-          <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('VIN')}</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>1HGCM82633A123456</Text>
-          </View>
-        </View>
+        ))}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -117,4 +131,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
