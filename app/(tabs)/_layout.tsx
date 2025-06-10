@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, View, SafeAreaView, StyleSheet, Image } from 'react-native';
+import { Platform, View, SafeAreaView, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -12,28 +12,34 @@ import { Audio } from 'expo-av';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const THEME_KEY = 'appTheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme];
+  const systemColorScheme = useColorScheme();
+  const [theme, setTheme] = useState<'light' | 'dark'>(systemColorScheme ?? 'light');
+  const themeColors = Colors[theme];
   const router = useRouter();
   const [sound, setSound] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Load the login state
-    const checkLoginStatus = async () => {
-      const token = await AsyncStorage.getItem('authToken');
-      setIsLoggedIn(!!token); // Set isLoggedIn to true if token exists
+    const loadTheme = async () => {
+      const savedTheme = await AsyncStorage.getItem(THEME_KEY);
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        setTheme(savedTheme);
+      }
     };
 
-    checkLoginStatus();
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      setIsLoggedIn(!!token);
+    };
 
-    console.log(isLoggedIn);
+    loadTheme();
+    checkLoginStatus();
   }, []);
 
-  // Load the sound effect
   useEffect(() => {
     return sound
       ? () => {
@@ -54,33 +60,53 @@ export default function TabLayout() {
     }
   };
 
-  const handleTabPress = async (routeName) => {
-    await playSound();
-    return { routeName };
-  };
-
-  const handleProfileTabPress = async (e) => {
-    if (!isLoggedIn) {
-      e.preventDefault();
-      await playSound();
-      router.push('login');
-    } else {
-      await playSound();
-    }
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    await AsyncStorage.setItem(THEME_KEY, newTheme);
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       {/* Custom Header */}
-      <View style={[
-        styles.header,
-        { backgroundColor: themeColors.headerBackground, borderBottomColor: themeColors.border }
-      ]}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: themeColors.headerBackground,
+            borderBottomColor: themeColors.border,
+          },
+        ]}
+      >
         <View style={styles.logoContainer}>
-          <ThemedText style={[styles.logoText, { color: themeColors.tint, textShadowColor: themeColors.shadow }]}>
-           {t('GARIOUSH')}
+          <ThemedText
+            style={[
+              styles.logoText,
+              { color: themeColors.tint, textShadowColor: themeColors.shadow },
+            ]}
+          >
+            {t('GARIOUSH')}
           </ThemedText>
           <View style={[styles.logoUnderline, { backgroundColor: themeColors.tint }]} />
+        </View>
+
+        {/* Theme Toggle Button */}
+        <View
+          style={{
+            position: 'absolute',
+            left: 20,
+            top: Platform.OS === 'android' ? 65 : 35,
+          }}
+        >
+          <FontAwesome.Button
+            name={theme === 'light' ? 'moon-o' : 'sun-o'}
+            backgroundColor="transparent"
+            color={themeColors.tint}
+            onPress={toggleTheme}
+            iconStyle={{ marginRight: 8 }}
+          >
+            {theme === 'light' ? t('Dark') : t('Light')}
+          </FontAwesome.Button>
         </View>
       </View>
 
@@ -93,16 +119,22 @@ export default function TabLayout() {
           tabBarBackground: TabBarBackground,
           tabBarStyle: [
             styles.tabBar,
-            { borderTopColor: themeColors.border, backgroundColor: themeColors.tabBarBackground },
-            Platform.select({ ios: { position: 'absolute' }, android: { elevation: 8 } })
+            {
+              borderTopColor: themeColors.border,
+              backgroundColor: themeColors.tabBarBackground,
+            },
+            Platform.select({
+              ios: { position: 'absolute' },
+              android: { elevation: 8 },
+            }),
           ],
           tabBarLabelStyle: styles.tabLabel,
-        }}>
-
+        }}
+      >
         <Tabs.Screen
           name="index"
           options={{
-            title:  t('Home'),
+            title: t('Home'),
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
           listeners={({ navigation }) => ({
@@ -117,7 +149,9 @@ export default function TabLayout() {
           name="cart"
           options={{
             title: t('Cart'),
-            tabBarIcon: ({ color }) => <FontAwesome name="shopping-cart" size={24} color={color} />,
+            tabBarIcon: ({ color }) => (
+              <FontAwesome name="shopping-cart" size={24} color={color} />
+            ),
           }}
           listeners={({ navigation }) => ({
             tabPress: async (e) => {
@@ -127,30 +161,13 @@ export default function TabLayout() {
           })}
         />
 
-        {/* <Tabs.Screen
-          name="notifications"
-          options={{
-            title: t('Notifications'),
-            tabBarIcon: ({ color }) => <FontAwesome name="bell" size={24} color={color} />,
-          }}
-          listeners={({ navigation }) => ({
-            tabPress: async (e) => {
-              await playSound();
-              navigation.navigate('notifications');
-            },
-          })}
-        /> */}
-
         <Tabs.Screen
           name="profile"
           options={{
-            title: isLoggedIn ? t('Profile'): t('Login'),
-            tabBarIcon: ({ color }) =>
-              isLoggedIn ? (
+            title: isLoggedIn ? t('Profile') : t('Login'),
+            tabBarIcon: ({ color }) => (
               <FontAwesome name="user" size={24} color={color} />
-              ) : (
-                <FontAwesome name="user" size={24} color={color} />
-              ),
+            ),
           }}
           listeners={({ navigation }) => ({
             tabPress: async (e) => {
@@ -158,7 +175,6 @@ export default function TabLayout() {
                 e.preventDefault();
                 await playSound();
                 router.push('login');
-
               } else {
                 await playSound();
                 navigation.navigate('/profile');
@@ -166,13 +182,14 @@ export default function TabLayout() {
             },
           })}
         />
+
         <Tabs.Screen
           name="orders"
           options={{
             title: t('orders'),
-          tabBarIcon: ({ color }) => (
-      <FontAwesome name="shopping-bag" size={24} color={color} />
-    ),
+            tabBarIcon: ({ color }) => (
+              <FontAwesome name="shopping-bag" size={24} color={color} />
+            ),
           }}
           listeners={({ navigation }) => ({
             tabPress: async (e) => {
@@ -222,10 +239,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginBottom: Platform.OS === 'ios' ? 0 : 5,
-  },
-  profileAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
   },
 });

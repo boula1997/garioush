@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+// app/_layout.tsx
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react';
 import { View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Audio } from 'expo-av';
 import 'react-native-reanimated';
+
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -24,13 +27,10 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Pre-load the car sound
         const { sound: carSound } = await Audio.Sound.createAsync(
-          require('../assets/car2.mp3') // Make sure you have this file in your assets
+          require('../assets/car2.mp3')
         );
         await carSound.playAsync();
-        
-        // Small delay to let the sound play and splash screen show
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
@@ -52,13 +52,13 @@ export default function RootLayout() {
     return (
       <View style={styles.container}>
         <Image 
-          source={require('../assets/images/logo2.png')} // Replace with your logo path
+          source={require('../assets/images/logo2.png')}
           style={styles.logo}
           resizeMode="contain"
         />
         <ActivityIndicator 
           size="large" 
-          color="#FF0000" // Red color
+          color="#FF0000"
           style={styles.spinner}
         />
       </View>
@@ -67,11 +67,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <SafeAreaProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
     </ThemeProvider>
   );
 }
@@ -79,7 +81,7 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#080533', // Dark blue background
+    backgroundColor: '#080533',
     justifyContent: 'center',
     alignItems: 'center',
   },
