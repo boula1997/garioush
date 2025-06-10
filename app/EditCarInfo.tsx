@@ -1,34 +1,120 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EditCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-   const { t } = useTranslation();
+  const { t } = useTranslation();
 
-  // State to manage form inputs and image
-  const [make, setMake] = useState('Toyota');
-  const [model, setModel] = useState('Camry');
-  const [year, setYear] = useState('2022');
-  const [licensePlate, setLicensePlate] = useState('XYZ-1234');
-  const [vin, setVin] = useState('1HGCM82633A123456');
-  const [carImage, setCarImage] = useState('https://ymimg1.b8cdn.com/uploads/car_model/10892/pictures/13615159/Toyota-Camry-2025-Exterior-1.jpg');
+  const [carData, setCarData] = useState({
+    carBrand: '',
+    carModel: '',
+    manufactureYear: '',
+    mileage: '',
+    belt_changed_at: '',
+    brake_pad_changed_at: '',
+    disc_changed_at: '',
+    tire_changed_at: '',
+    alignment_at: '',
+    battery_status: '',
+    engine_oil_status: '',
+    brake_oil_status: '',
+    power_oil_status: '',
+    transmission_oil_status: '',
+    transmission_type: '',
+  });
 
-  const handleSave = () => {
-    // Logic to save the updated car information
-    console.log('Car info saved:', { make, model, year, licensePlate, vin });
+  const [loading, setLoading] = useState(false);
+
+  // Fetch car data from API
+  useEffect(() => {
+    const fetchCarData = async () => {
+      try {
+        setLoading(true);
+        const token = await AsyncStorage.getItem('authToken');
+
+        if (!token) {
+          Alert.alert(t('Error'), t('No auth token found.'));
+          return;
+        }
+
+        const response = await axios.get(
+          'https://yousab-tech.com/groshy/public/api/auth/carProfile',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setCarData(response.data?.data || carData);
+      } catch (error) {
+        console.error(error);
+        Alert.alert(t('Error'), t('Failed to fetch car data.'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCarData();
+  }, []);
+
+  // Save updated car data to API
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+
+      if (!token) {
+        Alert.alert(t('Error'), t('No auth token found.'));
+        return;
+      }
+
+      const response = await axios.post(
+        'https://yousab-tech.com/groshy/public/api/auth/carProfile/store',
+        carData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      Alert.alert(t('Success'), response.data?.message || t('Car info updated.'));
+    } catch (error) {
+      console.error(error);
+      Alert.alert(t('Error'), t('Failed to save car data.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleImageUpload = () => {
-    // Logic for uploading a new image (open image picker, etc.)
-    console.log('Upload new car image');
-    // Here, you would normally open a file picker to allow the user to choose a new image
-    setCarImage('https://ymimg1.b8cdn.com/uploads/car_model/10892/pictures/13615159/Toyota-Camry-2025-Exterior-1.jpg'); // For demo purposes, updating with a new image URL
-  };
+  // Show loading screen
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+        <Text style={{ marginTop: 10 }}>{t('Loading car info...')}</Text>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -37,97 +123,33 @@ export default function EditCarInfoScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-          {/* Car Image */}
-          <View style={styles.carImageContainer}>
-            <Image source={{ uri: carImage }} style={styles.carImage} />
-            <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
-              <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
-              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('Upload')}</Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Editable Car Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>{t('Edit Car Details')}</Text>
+            <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>
+              {t('Edit Car Details')}
+            </Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-            {/* Make */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="directions-car" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Make')}</Text>
+            {Object.keys(carData).map((key) => (
+              <View key={key} style={styles.inputItem}>
+                <Text style={[styles.label, { color: colors.tint }]}>{t(key)}</Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  value={carData[key] ? carData[key].toString() : ''}
+                  onChangeText={(value) =>
+                    setCarData((prev) => ({ ...prev, [key]: value }))
+                  }
+                  placeholder={t(key)}
+                  placeholderTextColor={colors.tint}
+                />
               </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={make}
-                onChangeText={setMake}
-                placeholder={t('Make')}
-                placeholderTextColor={colors.tint}
-              />
-            </View>
-
-            {/* Model */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="directions-car" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Model')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={model}
-                onChangeText={setModel}
-                placeholder={t('Model')}
-                placeholderTextColor={colors.tint}
-              />
-            </View>
-
-            {/* Year */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="event" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Year')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={year}
-                onChangeText={setYear}
-                placeholder={t('Year')}
-                placeholderTextColor={colors.tint}
-              />
-            </View>
-
-            {/* License Plate */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="confirmation-number" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('License Plate')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={licensePlate}
-                onChangeText={setLicensePlate}
-                placeholder={t('License Plate')}
-                placeholderTextColor={colors.tint}
-              />
-            </View>
-
-            {/* VIN */}
-            <View style={styles.inputItem}>
-              <View style={styles.inputLabelContainer}>
-                <MaterialIcons name="fingerprint" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('VIN')}</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={vin}
-                onChangeText={setVin}
-                placeholder={t('VIN')}
-                placeholderTextColor={colors.tint}
-              />
-            </View>
+            ))}
 
             {/* Save Button */}
-            <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.tint }]} onPress={handleSave}>
+            <TouchableOpacity
+              style={[styles.saveButton, { backgroundColor: colors.tint }]}
+              onPress={handleSave}
+            >
               <Text style={styles.saveButtonText}>{t('Save')}</Text>
             </TouchableOpacity>
           </View>
@@ -138,62 +160,13 @@ export default function EditCarInfoScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollViewContent: {
-    flexGrow: 1,
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  carImageContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  carImage: {
-    width: 200,
-    height: 120,
-    borderRadius: 10,
-  },
-  uploadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  uploadButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  detailsContainer: {
-    padding: 16,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  carDetailsTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  divider: {
-    height: 1,
-    marginVertical: 10,
-    opacity: 0.2,
-    marginBottom:20,
-  },
-  inputItem: {
-    marginBottom: 16,
-  },
-  inputLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
+  scrollViewContent: { flexGrow: 1 },
+  container: { flex: 1, padding: 16 },
+  detailsContainer: { padding: 16, borderRadius: 10, marginTop: 10 },
+  carDetailsTitle: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
+  divider: { height: 1, marginVertical: 10, opacity: 0.2, marginBottom: 20 },
+  inputItem: { marginBottom: 16 },
+  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
   input: {
     height: 40,
     borderBottomWidth: 1,
@@ -208,9 +181,5 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
   },
-  saveButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  saveButtonText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
 });
