@@ -93,7 +93,23 @@
     "Created At": "تاريخ الإنشاء",
     "Products": "المنتجات",
     "Quantity": "الكمية",
-    "pending": "قيد الانتظار"
+    "pending": "قيد الانتظار",
+     "carBrand": "ماركة السيارة",
+  "carModel": "موديل السيارة",
+  "manufactureYear": "سنة التصنيع",
+  "mileage": "عدد الكيلومترات",
+  "belt_changed_at": "تم تغيير الحزام في",
+  "brake_pad_changed_at": "تم تغيير تيل الفرامل في",
+  "disc_changed_at": "تم تغيير الديسك في",
+  "tire_changed_at": "تم تغيير الإطارات في",
+  "alignment_at": "تم عمل الاتزان في",
+  "battery_status": "حالة البطارية",
+  "engine_oil_status": "حالة زيت المحرك",
+  "brake_oil_status": "حالة زيت الفرامل",
+  "power_oil_status": "حالة زيت الباور",
+  "transmission_oil_status": "حالة زيت الفتيس",
+  "transmission_type": "نوع ناقل الحركة"
+    
 
 
 

@@ -92,7 +92,22 @@
   "Created At": "Created At",
   "Products": "Products",
   "Quantity": "Quantity",
-  "pending": "pending"
+  "pending": "pending",
+    "carBrand": "Car Brand",
+  "carModel": "Car Model",
+  "manufactureYear": "Manufacture Year",
+  "mileage": "Mileage",
+  "belt_changed_at": "Belt Changed At",
+  "brake_pad_changed_at": "Brake Pad Changed At",
+  "disc_changed_at": "Disc Changed At",
+  "tire_changed_at": "Tire Changed At",
+  "alignment_at": "Alignment At",
+  "battery_status": "Battery Status",
+  "engine_oil_status": "Engine Oil Status",
+  "brake_oil_status": "Brake Oil Status",
+  "power_oil_status": "Power Steering Oil Status",
+  "transmission_oil_status": "Transmission Oil Status",
+  "transmission_type": "Transmission Type"
  
 
 

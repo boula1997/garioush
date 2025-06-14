@@ -1,7 +1,7 @@
 {
     "expo": {
         "name": "Garioush",
-        "slug": "Garioush",
+        "slug": "garioush-app-front",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/images/logo2.png",
