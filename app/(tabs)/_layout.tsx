@@ -9,7 +9,6 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
-import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const THEME_KEY = 'appTheme';
@@ -21,7 +20,6 @@ export default function TabLayout() {
   const router = useRouter();
   const [sound, setSound] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const { t } = useTranslation();
 
   useEffect(() => {
     const loadTheme = async () => {
@@ -85,7 +83,7 @@ export default function TabLayout() {
               { color: themeColors.tint, textShadowColor: themeColors.shadow },
             ]}
           >
-            {t('GARIOUSH')}
+            GARIOUSH
           </ThemedText>
           <View style={[styles.logoUnderline, { backgroundColor: themeColors.tint }]} />
         </View>
@@ -105,7 +103,7 @@ export default function TabLayout() {
             onPress={toggleTheme}
             iconStyle={{ marginRight: 8 }}
           >
-            {theme === 'light' ? t('Dark') : t('Light')}
+            {theme === 'light' ? 'Dark' : 'Light'}
           </FontAwesome.Button>
         </View>
       </View>
@@ -134,7 +132,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: t('Home'),
+            title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
           listeners={({ navigation }) => ({
@@ -148,7 +146,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="cart"
           options={{
-            title: t('Cart'),
+            title: 'Cart',
             tabBarIcon: ({ color }) => (
               <FontAwesome name="shopping-cart" size={24} color={color} />
             ),
@@ -164,7 +162,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: isLoggedIn ? t('Profile') : t('Login'),
+            title: isLoggedIn ? 'Profile' : 'Login',
             tabBarIcon: ({ color }) => (
               <FontAwesome name="user" size={24} color={color} />
             ),
@@ -186,7 +184,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="orders"
           options={{
-            title: t('orders'),
+            title: 'Orders',
             tabBarIcon: ({ color }) => (
               <FontAwesome name="shopping-bag" size={24} color={color} />
             ),

@@ -3,17 +3,14 @@ import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView } from 're
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MyCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
 
   const [carInfo, setCarInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,7 +28,7 @@ export default function MyCarInfoScreen() {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("boula",data);
+          console.log("boula", data);
           setCarInfo(data.data);
           setLoading(false);
         })
@@ -40,8 +37,6 @@ export default function MyCarInfoScreen() {
 
     fetchData();
   }, []);
-
-
 
   if (loading) {
     return (
@@ -54,7 +49,7 @@ export default function MyCarInfoScreen() {
   if (!carInfo) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text }}>{t('Failed to load car information.')}</Text>
+        <Text style={{ color: colors.text }}>Failed to load car information.</Text>
       </View>
     );
   }
@@ -68,14 +63,14 @@ export default function MyCarInfoScreen() {
 
       {/* Car Details */}
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-        <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>{t('Car Details')}</Text>
+        <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>Car Details</Text>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
         {Object.entries(carInfo).map(([key, value]) => (
           <View style={styles.detailItem} key={key}>
             <MaterialIcons name="info" size={20} color={colors.tint} />
             <View style={styles.detailTextContainer}>
-              <Text style={[styles.detailTitle, { color: colors.tint }]}>{t(key)}</Text>
+              <Text style={[styles.detailTitle, { color: colors.tint }]}>{key}</Text>
               <Text style={[styles.detailText, { color: colors.text }]}>{value}</Text>
             </View>
           </View>

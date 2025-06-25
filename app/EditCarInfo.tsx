@@ -13,14 +13,12 @@ import {
 } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EditCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
 
   const [carData, setCarData] = useState({
     carBrand: '',
@@ -50,7 +48,7 @@ export default function EditCarInfoScreen() {
         const token = await AsyncStorage.getItem('authToken');
 
         if (!token) {
-          Alert.alert(t('Error'), t('No auth token found.'));
+          Alert.alert('Error', 'No auth token found.');
           return;
         }
 
@@ -66,7 +64,7 @@ export default function EditCarInfoScreen() {
         setCarData(response.data?.data || carData);
       } catch (error) {
         console.error(error);
-        Alert.alert(t('Error'), t('Failed to fetch car data.'));
+        Alert.alert('Error', 'Failed to fetch car data.');
       } finally {
         setLoading(false);
       }
@@ -82,7 +80,7 @@ export default function EditCarInfoScreen() {
       const token = await AsyncStorage.getItem('authToken');
 
       if (!token) {
-        Alert.alert(t('Error'), t('No auth token found.'));
+        Alert.alert('Error', 'No auth token found.');
         return;
       }
 
@@ -97,10 +95,10 @@ export default function EditCarInfoScreen() {
         }
       );
 
-      Alert.alert(t('Success'), response.data?.message || t('Car info updated.'));
+      Alert.alert('Success', response.data?.message || 'Car info updated.');
     } catch (error) {
       console.error(error);
-      Alert.alert(t('Error'), t('Failed to save car data.'));
+      Alert.alert('Error', 'Failed to save car data.');
     } finally {
       setLoading(false);
     }
@@ -111,10 +109,29 @@ export default function EditCarInfoScreen() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={{ marginTop: 10 }}>{t('Loading car info...')}</Text>
+        <Text style={{ marginTop: 10 }}>Loading car info...</Text>
       </View>
     );
   }
+
+  // Map keys to nicer labels (optional)
+  const labels: Record<string, string> = {
+    carBrand: 'Car Brand',
+    carModel: 'Car Model',
+    manufactureYear: 'Manufacture Year',
+    mileage: 'Mileage',
+    belt_changed_at: 'Belt Changed At',
+    brake_pad_changed_at: 'Brake Pad Changed At',
+    disc_changed_at: 'Disc Changed At',
+    tire_changed_at: 'Tire Changed At',
+    alignment_at: 'Alignment At',
+    battery_status: 'Battery Status',
+    engine_oil_status: 'Engine Oil Status',
+    brake_oil_status: 'Brake Oil Status',
+    power_oil_status: 'Power Oil Status',
+    transmission_oil_status: 'Transmission Oil Status',
+    transmission_type: 'Transmission Type',
+  };
 
   return (
     <KeyboardAvoidingView
@@ -126,20 +143,20 @@ export default function EditCarInfoScreen() {
           {/* Editable Car Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
             <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>
-              {t('Edit Car Details')}
+              Edit Car Details
             </Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             {Object.keys(carData).map((key) => (
               <View key={key} style={styles.inputItem}>
-                <Text style={[styles.label, { color: colors.tint }]}>{t(key)}</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{labels[key] || key}</Text>
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
                   value={carData[key] ? carData[key].toString() : ''}
                   onChangeText={(value) =>
                     setCarData((prev) => ({ ...prev, [key]: value }))
                   }
-                  placeholder={t(key)}
+                  placeholder={labels[key] || key}
                   placeholderTextColor={colors.tint}
                 />
               </View>
@@ -150,7 +167,7 @@ export default function EditCarInfoScreen() {
               style={[styles.saveButton, { backgroundColor: colors.tint }]}
               onPress={handleSave}
             >
-              <Text style={styles.saveButtonText}>{t('Save')}</Text>
+              <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>

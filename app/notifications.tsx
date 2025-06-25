@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/ThemedText';
 
 const notifications = [
@@ -32,7 +31,6 @@ const notifications = [
 export default function NotificationScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
 
   // Dynamic styles based on theme
   const dynamicStyles = StyleSheet.create({
@@ -66,12 +64,12 @@ export default function NotificationScreen() {
               style={styles.image}
               resizeMode="contain"
               // optional: add a background color placeholder for images
-              defaultSource={'@/assets/imagePlaceholder.png'} // if you have one
+              // defaultSource={'@/assets/imagePlaceholder.png'} // if you have one
             />
             <View style={styles.textContainer}>
-              <ThemedText style={[styles.title, { color: colors.text }]}>{t(item.title)}</ThemedText>
-              <ThemedText style={[styles.description, dynamicStyles.description, { color: colors.text }]}>{t(item.description)}</ThemedText>
-              <ThemedText style={[styles.time, dynamicStyles.time, { color: colors.text }]}>{t(item.time)}</ThemedText>
+              <ThemedText style={[styles.title, { color: colors.text }]}>{item.title}</ThemedText>
+              <ThemedText style={[styles.description, dynamicStyles.description, { color: colors.text }]}>{item.description}</ThemedText>
+              <ThemedText style={[styles.time, dynamicStyles.time, { color: colors.text }]}>{item.time}</ThemedText>
             </View>
           </TouchableOpacity>
         )}

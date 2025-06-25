@@ -8,14 +8,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import axios from 'axios'; 
-import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 
 export default function AuthScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
@@ -62,10 +60,10 @@ export default function AuthScreen() {
     >
       <View style={styles.header}>
         <ThemedText style={[styles.title, { color: themeColors.tint }]}>
-          {t('Register')}
+          Register
         </ThemedText>
         <ThemedText style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-          {t('Create an account')}
+          Create an account
         </ThemedText>
       </View>
 
@@ -73,7 +71,7 @@ export default function AuthScreen() {
         {[
           {
             icon: 'envelope',
-            placeholder: t('Email'),
+            placeholder: 'Email',
             keyboardType: 'email-address',
             value: authData.email,
             onChange: (text: string) => setAuthData({ ...authData, email: text }),
@@ -82,7 +80,7 @@ export default function AuthScreen() {
           },
           {
             icon: 'user',
-            placeholder: t('Fullname'),
+            placeholder: 'Fullname',
             keyboardType: 'default',
             value: authData.fullname,
             onChange: (text: string) => setAuthData({ ...authData, fullname: text }),
@@ -91,7 +89,7 @@ export default function AuthScreen() {
           },
           {
             icon: 'phone',
-            placeholder: t('Phone Number'),
+            placeholder: 'Phone Number',
             keyboardType: 'phone-pad',
             value: authData.phone,
             onChange: (text: string) => setAuthData({ ...authData, phone: text }),
@@ -124,7 +122,7 @@ export default function AuthScreen() {
           <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder={t('Password')}
+            placeholder="Password"
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showPassword}
             value={authData.password}
@@ -147,7 +145,7 @@ export default function AuthScreen() {
           <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
           <TextInput
             style={[styles.input, { color: themeColors.text }]}
-            placeholder={t('Confirm Password')}
+            placeholder="Confirm Password"
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showPasswordConfirmation}
             value={authData.password_confirmation}
@@ -176,7 +174,7 @@ export default function AuthScreen() {
           }
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
-            {t('Register')}
+            Register
           </ThemedText>
         </TouchableOpacity>
       </View>

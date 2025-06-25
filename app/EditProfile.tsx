@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
 
   // State to manage form inputs and image
   const [name, setName] = useState('John Doe');
@@ -19,7 +17,9 @@ export default function EditProfileScreen() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [profileImage, setProfileImage] = useState('https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg');
+  const [profileImage, setProfileImage] = useState(
+    'https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg'
+  );
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -27,7 +27,7 @@ export default function EditProfileScreen() {
     const getTokenAndFetchData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('authToken');
-        console.log('Retrieved Token:', storedToken); // Log token
+        console.log('Retrieved Token:', storedToken);
         if (storedToken) {
           setToken(storedToken);
         }
@@ -57,8 +57,7 @@ export default function EditProfileScreen() {
 
       const data = await response.json();
       console.log('Fetched profile data:', data);
-      setProfileData(data); // Assuming 'data' contains the required profile details
-      console.log(profileData);
+      setProfileData(data);
     } catch (err) {
       console.error('Error fetching profile data:', err.message);
     } finally {
@@ -69,19 +68,16 @@ export default function EditProfileScreen() {
   useEffect(() => {
     if (token) {
       fetchProfileData(token);
-      console.log("profileData", profileData);
-
     }
   }, [token]);
 
   const handleSave = async () => {
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      Alert.alert('Error', "Passwords don't match!");
       return;
     }
 
     try {
-      // Create a FormData object to handle both text and file data
       const formData = new FormData();
       formData.append('fullname', name);
       formData.append('email', email);
@@ -102,9 +98,8 @@ export default function EditProfileScreen() {
       const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/profile/update', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          // Do not include 'Content-Type' when using FormData; the browser sets it automatically
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
         },
         body: formData,
       });
@@ -115,92 +110,95 @@ export default function EditProfileScreen() {
         throw new Error(responseData.message || 'Error updating profile');
       }
 
-      alert(responseData.message || 'Profile updated successfully');
+      Alert.alert('Success', responseData.message || 'Profile updated successfully');
       console.log('Updated profile data:', responseData.data);
 
-      // Optionally update local state with the updated profile data
       setProfileData(responseData.data);
     } catch (error) {
       console.error('Error updating profile:', error.message);
-      alert('Failed to update profile. Please try again.');
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
     }
   };
 
   useEffect(() => {
-  if (profileData) {
-    setName(profileData.fullname || '');
-    setEmail(profileData.email || '');
-    setPhone(profileData.phone || '');
-  }
-}, [profileData]);
-
-
+    if (profileData) {
+      setName(profileData.fullname || '');
+      setEmail(profileData.email || '');
+      setPhone(profileData.phone || '');
+    }
+  }, [profileData]);
 
   const handleImageUpload = () => {
-    // Logic for uploading a new profile image (open image picker, etc.)
+    // Placeholder for image picker logic
     console.log('Upload new profile image');
-    setProfileImage('https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg'); // For demo purposes, updating with a new image URL
+    setProfileImage(
+      'https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg'
+    ); // Demo: new image URL
   };
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Loading profile...</Text>
+      </View>
+    );
+  }
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Profile Image */}
           <View style={styles.profileImageContainer}>
-            <Image source={{ uri: profileData?.image }} style={styles.profileImage} />
+            <Image source={{ uri: profileData?.image || profileImage }} style={styles.profileImage} />
             <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
               <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
-              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('Upload')}</Text>
+              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>Upload</Text>
             </TouchableOpacity>
           </View>
 
           {/* Editable Profile Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>{t('Edit Profile')}</Text>
+            <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>Edit Profile</Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              value={name} // Use `name` instead of `profileData?.fullname`
+              value={name}
               onChangeText={setName}
-              placeholder={t('Name')}
+              placeholder="Name"
               placeholderTextColor={colors.tint}
             />
 
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              value={email} // Use `email` instead of `profileData?.email`
+              value={email}
               onChangeText={setEmail}
-              placeholder={t('Email')}
+              placeholder="Email"
               keyboardType="email-address"
               placeholderTextColor={colors.tint}
             />
 
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              value={phone} // Use `phone` instead of `profileData?.phone`
+              value={phone}
               onChangeText={setPhone}
-              placeholder={t('Phone')}
+              placeholder="Phone"
               keyboardType="phone-pad"
               placeholderTextColor={colors.tint}
             />
-
 
             {/* Password */}
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="lock" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Password')}</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>Password</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={password}
                 onChangeText={setPassword}
-                placeholder={t('Password')}
+                placeholder="Password"
                 secureTextEntry
                 placeholderTextColor={colors.tint}
               />
@@ -210,13 +208,13 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="lock" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>{t('Confirm Password')}</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>Confirm Password</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                placeholder={t('Confirm Password')}
+                placeholder="Confirm Password"
                 secureTextEntry
                 placeholderTextColor={colors.tint}
               />
@@ -224,7 +222,7 @@ export default function EditProfileScreen() {
 
             {/* Save Button */}
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.tint }]} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>{t('Save')}</Text>
+              <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -16,7 +16,6 @@ export default function Index() {
   const themeColors = Colors[colorScheme];
   const [sound, setSound] = useState();
   const [services, setServices] = useState([]);
-  const { t } = useTranslation();
   const [langToggle, setLangToggle] = useState(false);
 
   const changeLanguage = async () => {
@@ -80,8 +79,12 @@ export default function Index() {
           >
             <View style={styles.cardInner}>
               <Image source={{ uri: service.image }} style={styles.cardImage} resizeMode="contain" />
-              <ThemedText style={[styles.cardTitle, { color: themeColors.text }]}>{t(service.title)}</ThemedText>
-              <ThemedText style={[styles.cardDescription, { color: themeColors.text }]}>{t(service.description)}</ThemedText>
+              <ThemedText style={[styles.cardTitle, { color: themeColors.text }]}>
+                {service.title}
+              </ThemedText>
+              <ThemedText style={[styles.cardDescription, { color: themeColors.text }]}>
+                {service.description}
+              </ThemedText>
             </View>
           </TouchableOpacity>
         ))}
@@ -102,21 +105,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-card: {
-  width: '47%',
-  backgroundColor: '#fff',
-  borderRadius: 20,
-  padding: 6,
-  marginBottom: 20,
-  borderWidth: 0,
-  // iOS Shadow
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.1,
-  shadowRadius: 6,
-  // Android Elevation
-  elevation: 4,
-},
+  card: {
+    width: '47%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 6,
+    marginBottom: 20,
+    borderWidth: 0,
+    // iOS Shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    // Android Elevation
+    elevation: 4,
+  },
 
   cardInner: {
     alignItems: 'center',

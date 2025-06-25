@@ -12,14 +12,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTranslation } from 'react-i18next';
 
 export default function UserOrdersScreen() {
   const [token, setToken] = useState('');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { t } = useTranslation();
 
   // Detect system color scheme
   const colorScheme = useColorScheme();
@@ -57,7 +55,7 @@ export default function UserOrdersScreen() {
       try {
         const storedToken = await AsyncStorage.getItem('authToken');
         if (!storedToken) {
-          Alert.alert(t('Error'), t('User not authenticated.'));
+          Alert.alert('Error', 'User not authenticated.');
           return;
         }
 
@@ -75,14 +73,14 @@ export default function UserOrdersScreen() {
         );
 
         if (!response.ok) {
-          throw new Error(t('Failed to fetch orders'));
+          throw new Error('Failed to fetch orders');
         }
 
         const json = await response.json();
         setOrders(json.data || []);
       } catch (error) {
         console.error('Fetch error:', error);
-        Alert.alert(t('Error'), t('Failed to load orders.'));
+        Alert.alert('Error', 'Failed to load orders.');
       } finally {
         setLoading(false);
       }
@@ -109,7 +107,7 @@ export default function UserOrdersScreen() {
       ]}
     >
       <ThemedText style={[styles.title, { color: themeColors.titleColor }]}>
-        {t('My Orders')}
+        My Orders
       </ThemedText>
 
       {orders.map((order, index) => (
@@ -126,7 +124,7 @@ export default function UserOrdersScreen() {
         >
           <View style={styles.rowTop}>
             <ThemedText style={[styles.label, { color: themeColors.labelColor }]}>
-              {t('Order')} #{order.id}
+              Order #{order.id}
             </ThemedText>
             <TouchableOpacity
               onPress={() =>
@@ -142,23 +140,23 @@ export default function UserOrdersScreen() {
 
           <View style={styles.row}>
             <ThemedText style={[styles.key, { color: themeColors.keyColor }]}>
-              {t('Status')}:
+              Status:
             </ThemedText>
             <ThemedText style={[styles.value, { color: themeColors.valueColor }]}>
-              {t(order.status)}
+              {order.status}
             </ThemedText>
           </View>
           <View style={styles.row}>
             <ThemedText style={[styles.key, { color: themeColors.keyColor }]}>
-              {t('Total')}:
+              Total:
             </ThemedText>
             <ThemedText style={[styles.value, { color: themeColors.valueColor }]}>
-              {t(order.total)} EGP
+              {order.total} EGP
             </ThemedText>
           </View>
           <View style={styles.row}>
             <ThemedText style={[styles.key, { color: themeColors.keyColor }]}>
-              {t('Date')}:
+              Date:
             </ThemedText>
             <ThemedText style={[styles.value, { color: themeColors.valueColor }]}>
               {new Date(order.created_at).toLocaleDateString()}

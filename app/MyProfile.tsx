@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MyProfileScreen() {
@@ -11,14 +10,13 @@ export default function MyProfileScreen() {
   const [error, setError] = useState(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { t } = useTranslation();
   const [token, setToken] = useState(null);
 
   useEffect(() => {
     const getTokenAndFetchData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('authToken');
-        console.log('Retrieved Token:', storedToken); // Log token
+        console.log('Retrieved Token:', storedToken);
         if (storedToken) {
           setToken(storedToken);
         }
@@ -32,7 +30,7 @@ export default function MyProfileScreen() {
 
   const fetchProfileData = async (authToken) => {
     try {
-      console.log('Fetching profile with token:', authToken); // Debug token usage
+      console.log('Fetching profile with token:', authToken);
       const response = await fetch(
         'https://yousab-tech.com/groshy/public/api/auth/user-profile',
         {
@@ -49,7 +47,7 @@ export default function MyProfileScreen() {
       const data = await response.json();
       setProfileData(data);
     } catch (err) {
-      console.error('Error fetching profile data:', err.message); // Log full error
+      console.error('Error fetching profile data:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -74,7 +72,7 @@ export default function MyProfileScreen() {
     return (
       <View style={styles.errorContainer}>
         <Text style={[styles.errorText, { color: colors.error }]}>
-          {t('Error fetching profile data:')} {error}
+          Error fetching profile data: {error}
         </Text>
       </View>
     );
@@ -89,25 +87,25 @@ export default function MyProfileScreen() {
           style={styles.profileImage}
         />
         <Text style={[styles.profileName, { color: colors.tint }]}>
-          {profileData?.fullname || t('No Name')}
+          {profileData?.fullname || 'No Name'}
         </Text>
         <Text style={[styles.profileSubtitle, { color: colors.tint }]}>
-          {t('User')}
+          User
         </Text>
       </View>
 
       {/* Profile Details */}
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Email')} :-</Text>
+          <Text style={[styles.detailTitle, { color: colors.tint }]}>Email :-</Text>
           <Text style={[styles.detailText, { color: colors.text }]}>
-            {profileData?.email || t('Not Provided')}
+            {profileData?.email || 'Not Provided'}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('Phone')} :-</Text>
+          <Text style={[styles.detailTitle, { color: colors.tint }]}>Phone :-</Text>
           <Text style={[styles.detailText, { color: colors.text }]}>
-            {profileData?.phone || t('Not Provided')}
+            {profileData?.phone || 'Not Provided'}
           </Text>
         </View>
       </View>
@@ -161,7 +159,7 @@ const styles = StyleSheet.create({
   },
   detailItem: {
     marginBottom: 16,
-    alignItems: 'start',
+    alignItems: 'flex-start',
   },
   detailTitle: {
     fontSize: 16,
