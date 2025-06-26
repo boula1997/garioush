@@ -89,7 +89,7 @@ export default function TabLayout() {
         </View>
 
         {/* Theme Toggle Button */}
-        <View
+      {/*  <View
           style={{
             position: 'absolute',
             left: 20,
@@ -105,7 +105,7 @@ export default function TabLayout() {
           >
             {theme === 'light' ? 'Dark' : 'Light'}
           </FontAwesome.Button>
-        </View>
+        </View>*/}
       </View>
 
       {/* Tab Navigator */}
