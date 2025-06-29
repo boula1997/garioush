@@ -1,5 +1,11 @@
 import { 
-  View, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  ScrollView, 
+  Platform,
+  I18nManager
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -7,13 +13,15 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 export default function AuthScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
@@ -35,6 +43,12 @@ export default function AuthScreen() {
           password_confirmation: authData.password_confirmation,
           fullname: authData.fullname,
           phone: authData.phone,
+        },
+        {
+          headers: {
+            'locale': i18n.language,
+            'Content-Type': 'application/json',
+          }
         }
       );
 
@@ -46,7 +60,7 @@ export default function AuthScreen() {
       }
     } catch (error) {
       console.error('Error during registration:', error);
-      alert('An error occurred while registering.');
+      alert(t('register_error'));
     }
   };
 
@@ -54,16 +68,19 @@ export default function AuthScreen() {
     <ScrollView
       contentContainerStyle={[
         styles.container,
-        { backgroundColor: themeColors.background },
+        { 
+          backgroundColor: themeColors.background,
+          direction: isRTL ? 'rtl' : 'ltr'
+        },
       ]}
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.header}>
         <ThemedText style={[styles.title, { color: themeColors.tint }]}>
-          Register
+          {t('register')}
         </ThemedText>
         <ThemedText style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-          Create an account
+          {t('create_account')}
         </ThemedText>
       </View>
 
@@ -71,7 +88,7 @@ export default function AuthScreen() {
         {[
           {
             icon: 'envelope',
-            placeholder: 'Email',
+            placeholder: t('email'),
             keyboardType: 'email-address',
             value: authData.email,
             onChange: (text: string) => setAuthData({ ...authData, email: text }),
@@ -80,7 +97,7 @@ export default function AuthScreen() {
           },
           {
             icon: 'user',
-            placeholder: 'Fullname',
+            placeholder: t('fullname'),
             keyboardType: 'default',
             value: authData.fullname,
             onChange: (text: string) => setAuthData({ ...authData, fullname: text }),
@@ -89,7 +106,7 @@ export default function AuthScreen() {
           },
           {
             icon: 'phone',
-            placeholder: 'Phone Number',
+            placeholder: t('phone_number'),
             keyboardType: 'phone-pad',
             value: authData.phone,
             onChange: (text: string) => setAuthData({ ...authData, phone: text }),
@@ -99,11 +116,28 @@ export default function AuthScreen() {
         ].map(({ icon, placeholder, keyboardType, value, onChange, secureTextEntry, autoCapitalize }, i) => (
           <View
             key={i}
-            style={[styles.inputContainer, { borderColor: themeColors.border }]}
+            style={[
+              styles.inputContainer, 
+              { 
+                borderColor: themeColors.border,
+                flexDirection: isRTL ? 'row-reverse' : 'row'
+              }
+            ]}
           >
-            <FontAwesome name={icon} size={20} color={themeColors.tint} style={styles.icon} />
+            <FontAwesome 
+              name={icon} 
+              size={20} 
+              color={themeColors.tint} 
+              style={isRTL ? styles.iconRTL : styles.icon} 
+            />
             <TextInput
-              style={[styles.input, { color: themeColors.text }]}
+              style={[
+                styles.input, 
+                { 
+                  color: themeColors.text,
+                  textAlign: isRTL ? 'right' : 'left'
+                }
+              ]}
               placeholder={placeholder}
               placeholderTextColor={themeColors.textSecondary}
               keyboardType={keyboardType}
@@ -118,11 +152,28 @@ export default function AuthScreen() {
         ))}
 
         {/* Password */}
-        <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
-          <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
+        <View style={[
+          styles.inputContainer, 
+          { 
+            borderColor: themeColors.border,
+            flexDirection: isRTL ? 'row-reverse' : 'row'
+          }
+        ]}>
+          <FontAwesome 
+            name="lock" 
+            size={20} 
+            color={themeColors.tint} 
+            style={isRTL ? styles.iconRTL : styles.icon} 
+          />
           <TextInput
-            style={[styles.input, { color: themeColors.text }]}
-            placeholder="Password"
+            style={[
+              styles.input, 
+              { 
+                color: themeColors.text,
+                textAlign: isRTL ? 'right' : 'left'
+              }
+            ]}
+            placeholder={t('password')}
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showPassword}
             value={authData.password}
@@ -131,7 +182,10 @@ export default function AuthScreen() {
             autoCorrect={false}
             textContentType="password"
           />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+          <TouchableOpacity 
+            onPress={() => setShowPassword(!showPassword)} 
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          >
             <FontAwesome
               name={showPassword ? 'eye-slash' : 'eye'}
               size={20}
@@ -141,11 +195,28 @@ export default function AuthScreen() {
         </View>
 
         {/* Confirm Password */}
-        <View style={[styles.inputContainer, { borderColor: themeColors.border }]}>
-          <FontAwesome name="lock" size={20} color={themeColors.tint} style={styles.icon} />
+        <View style={[
+          styles.inputContainer, 
+          { 
+            borderColor: themeColors.border,
+            flexDirection: isRTL ? 'row-reverse' : 'row'
+          }
+        ]}>
+          <FontAwesome 
+            name="lock" 
+            size={20} 
+            color={themeColors.tint} 
+            style={isRTL ? styles.iconRTL : styles.icon} 
+          />
           <TextInput
-            style={[styles.input, { color: themeColors.text }]}
-            placeholder="Confirm Password"
+            style={[
+              styles.input, 
+              { 
+                color: themeColors.text,
+                textAlign: isRTL ? 'right' : 'left'
+              }
+            ]}
+            placeholder={t('confirm_password')}
             placeholderTextColor={themeColors.textSecondary}
             secureTextEntry={!showPasswordConfirmation}
             value={authData.password_confirmation}
@@ -154,7 +225,10 @@ export default function AuthScreen() {
             autoCorrect={false}
             textContentType="password"
           />
-          <TouchableOpacity onPress={() => setShowPasswordConfirmation(!showPasswordConfirmation)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+          <TouchableOpacity 
+            onPress={() => setShowPasswordConfirmation(!showPasswordConfirmation)} 
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+          >
             <FontAwesome
               name={showPasswordConfirmation ? 'eye-slash' : 'eye'}
               size={20}
@@ -174,7 +248,7 @@ export default function AuthScreen() {
           }
         >
           <ThemedText style={[styles.buttonText, { color: themeColors.buttonText }]}>
-            Register
+            {t('register')}
           </ThemedText>
         </TouchableOpacity>
       </View>
@@ -204,7 +278,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   inputContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1.5,
     marginBottom: 25,
@@ -220,6 +293,9 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 12,
+  },
+  iconRTL: {
+    marginLeft: 12,
   },
   button: {
     paddingVertical: 16,

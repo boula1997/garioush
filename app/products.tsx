@@ -9,7 +9,8 @@ import {
   FlatList,
   Modal,
   ActivityIndicator,
-  Alert
+  Alert,
+  I18nManager
 } from 'react-native';
 import { FontAwesome, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedText } from '@/components/ThemedText';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductsScreen() {
   const router = useRouter();
@@ -25,7 +27,6 @@ export default function ProductsScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('default');
-  const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +36,9 @@ export default function ProductsScreen() {
     last_page: 1,
     total_items: 0
   });
+  const { i18n, t } = useTranslation();
+
+  const isRTL = i18n.language === 'ar';
 
   useEffect(() => {
     if (subcategory) {
@@ -46,7 +50,13 @@ export default function ProductsScreen() {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://yousab-tech.com/groshy/public/api/subcategoryProducts?subcategory_id=${subcategoryId}&per_page=${pagination.per_page}&page=${page}`
+        `https://yousab-tech.com/groshy/public/api/subcategoryProducts?subcategory_id=${subcategoryId}&per_page=${pagination.per_page}&page=${page}`,
+        {
+          headers: {
+            'locale': i18n.language,
+            'Content-Type': 'application/json',
+          },
+        }
       );
       const json = await response.json();
 
@@ -68,7 +78,7 @@ export default function ProductsScreen() {
       const token = await AsyncStorage.getItem('authToken');
 
       if (!token) {
-        Alert.alert('خطأ', 'الرجاء تسجيل الدخول أولاً');
+        Alert.alert(t('error'), t('login_first'));
         return;
       }
 
@@ -76,20 +86,20 @@ export default function ProductsScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'locale': i18n.language,
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ id: productId })
       });
 
       const json = await response.json();
-      console.log(json);
       if (json.success) {
-        Alert.alert('تم إضافة المنتج إلى العربة', `الإجمالي: ${json.total} جنيه`);
+        Alert.alert(t('product_added'), `${t('total')}: ${json.total} ${t('currency')}`);
       } else {
-        Alert.alert('خطأ', 'تعذر إضافة المنتج إلى العربة');
+        Alert.alert(t('error'), t('add_to_cart_failed'));
       }
     } catch (err) {
-      Alert.alert('خطأ في الاتصال', err.message);
+      Alert.alert(t('connection_error'), err.message);
     }
   };
 
@@ -101,13 +111,21 @@ export default function ProductsScreen() {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOption === 'price-low') return a.price - b.price;
     if (sortOption === 'price-high') return b.price - a.price;
-    // Removed rating sorting
     return 0;
   });
 
   const loadMoreProducts = () => {
     if (pagination.current_page < pagination.last_page) {
       fetchProducts(subcategory as string, pagination.current_page + 1);
+    }
+  };
+
+  const getSortText = () => {
+    switch(sortOption) {
+      case 'default': return t('sort_default');
+      case 'price-low': return t('sort_price_low');
+      case 'price-high': return t('sort_price_high');
+      default: return t('sort_default');
     }
   };
 
@@ -122,35 +140,59 @@ export default function ProductsScreen() {
   if (error) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>حدث خطأ: {error}</Text>
+        <Text style={{ color: colors.text }}>{t('error_occurred')}: {error}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground }]}>
-        <FontAwesome name="search" size={16} color={colors.text} style={styles.searchIcon} />
+    <View style={[
+      styles.container, 
+      { 
+        backgroundColor: colors.background,
+        direction: isRTL ? 'rtl' : 'ltr' 
+      }
+    ]}>
+      <View style={[
+        styles.searchContainer, 
+        { 
+          backgroundColor: colors.cardBackground,
+          flexDirection: isRTL ? 'row-reverse' : 'row'
+        }
+      ]}>
+        <FontAwesome 
+          name="search" 
+          size={16} 
+          color={colors.text} 
+          style={isRTL ? styles.searchIconRTL : styles.searchIcon} 
+        />
         <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
-          placeholder="Search products..."
+          style={[
+            styles.searchInput, 
+            { 
+              color: colors.text,
+              textAlign: isRTL ? 'right' : 'left'
+            }
+          ]}
+          placeholder={t('search_products')}
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
 
-      <View style={styles.actionRow}>
-        {/* <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: colors.cardBackground }]}
-          onPress={() => setShowFilters(true)}
-        >
-          <MaterialIcons name="filter-list" size={18} color={colors.tint} />
-          <ThemedText style={[styles.actionText, { color: colors.tint }]}>Filters</ThemedText>
-        </TouchableOpacity> */}
-
+      <View style={[
+        styles.actionRow,
+        { flexDirection: isRTL ? 'row-reverse' : 'row' }
+      ]}>
         <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: colors.cardBackground }]}
+          style={[
+            styles.actionButton, 
+            { 
+              backgroundColor: colors.cardBackground,
+              flexDirection: isRTL ? 'row-reverse' : 'row'
+            }
+          ]}
           onPress={() => {
             setSortOption(prev =>
               prev === 'default' ? 'price-low' :
@@ -160,10 +202,15 @@ export default function ProductsScreen() {
           }}
         >
           <MaterialIcons name="sort" size={18} color={colors.tint} />
-          <ThemedText style={[styles.actionText, { color: colors.tint }]}>
-            Sort: {sortOption === 'default' ? 'Default' :
-              sortOption === 'price-low' ? 'Price Low' :
-                'Price High'}
+          <ThemedText style={[
+            styles.actionText, 
+            { 
+              color: colors.tint,
+              marginLeft: isRTL ? 0 : 8,
+              marginRight: isRTL ? 8 : 0
+            }
+          ]}>
+            {t('sort')}: {getSortText()}
           </ThemedText>
         </TouchableOpacity>
       </View>
@@ -173,28 +220,68 @@ export default function ProductsScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.productCard, { backgroundColor: colors.cardBackground }]}
+            style={[
+              styles.productCard, 
+              { 
+                backgroundColor: colors.cardBackground,
+                flexDirection: isRTL ? 'row-reverse' : 'row'
+              }
+            ]}
             onPress={() => router.push(`/product?id=${item.id}`)}
           >
             <Image
               source={{ uri: item.subcategory?.category?.image || 'https://via.placeholder.com/150' }}
-              style={styles.productImage}
+              style={[
+                styles.productImage,
+                { marginRight: isRTL ? 0 : 16, marginLeft: isRTL ? 40 : 0 }
+              ]}
               resizeMode="contain"
             />
             <View style={styles.productInfo}>
-              <ThemedText style={[styles.productName, { color: colors.text }]}>{item.title}</ThemedText>
-              <ThemedText style={[styles.productDesc, { color: colors.textSecondary }]}>{item.description}</ThemedText>
-              <ThemedText style={[styles.productPrice, { color: colors.tint }]}>
+              <ThemedText style={[
+                styles.productName, 
+                { 
+                  color: colors.text,
+                  textAlign: isRTL ? 'right' : 'left'
+                }
+              ]}>
+                {item.title}
+              </ThemedText>
+              <ThemedText style={[
+                styles.productDesc, 
+                { 
+                  color: colors.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left'
+                }
+              ]}>
+                {item.description}
+              </ThemedText>
+              <ThemedText style={[
+                styles.productPrice, 
+                { 
+                  color: colors.tint,
+                  textAlign: isRTL ? 'right' : 'left'
+                }
+              ]}>
                 ${item.price.toFixed(2)}
               </ThemedText>
               {item.details?.noOfKilos && (
-                <ThemedText style={{ color: colors.textSecondary }}>
-                  Size: {item.details.noOfKilos} kg
+                <ThemedText style={{ 
+                  color: colors.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left'
+                }}>
+                  {t('size')}: {item.details.noOfKilos} kg
                 </ThemedText>
               )}
             </View>
             <TouchableOpacity
-              style={[styles.cartButton, { backgroundColor: colors.tint }]}
+              style={[
+                styles.cartButton, 
+                { 
+                  backgroundColor: colors.tint,
+                  [isRTL ? 'left' : 'right']: 10
+                }
+              ]}
               onPress={() => handleAddToCart(item.id)}
             >
               <MaterialCommunityIcons name="cart-plus" size={20} color="white" />
@@ -212,40 +299,87 @@ export default function ProductsScreen() {
           ) : null
         }
       />
-
-      <Modal
-        visible={showFilters}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowFilters(false)}
-      >
-        {/* Filters UI Goes Here */}
-      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 16 },
+  container: { 
+    flex: 1, 
+    paddingTop: 16 
+  },
   searchContainer: {
-    flexDirection: 'row', alignItems: 'center', borderRadius: 8,
-    paddingHorizontal: 16, marginHorizontal: 16, marginBottom: 12, height: 48
+    alignItems: 'center', 
+    borderRadius: 8,
+    paddingHorizontal: 16, 
+    marginHorizontal: 16, 
+    marginBottom: 12, 
+    height: 48
   },
-  searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: '100%', fontSize: 16 },
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 12 },
-  actionButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
-  actionText: { marginLeft: 8, fontWeight: '600', fontSize: 14 },
-  productsContainer: { paddingHorizontal: 16, paddingBottom: 20 },
-  productCard: { flexDirection: 'row', borderRadius: 12, marginBottom: 16, padding: 12, position: 'relative' },
-  productImage: { width: 80, height: 80, borderRadius: 8, marginRight: 16 },
-  productInfo: { flex: 1, justifyContent: 'center' },
-  productName: { fontSize: 16, fontWeight: 'bold' },
-  productDesc: { fontSize: 14 },
-  productPrice: { fontSize: 16, fontWeight: 'bold' },
+  searchIcon: { 
+    marginRight: 8 
+  },
+  searchIconRTL: {
+    marginLeft: 8
+  },
+  searchInput: { 
+    flex: 1, 
+    height: '100%', 
+    fontSize: 16 
+  },
+  actionRow: { 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 16, 
+    marginBottom: 12 
+  },
+  actionButton: { 
+    alignItems: 'center', 
+    paddingVertical: 8, 
+    paddingHorizontal: 12, 
+    borderRadius: 8 
+  },
+  actionText: { 
+    fontWeight: '600', 
+    fontSize: 14 
+  },
+  productsContainer: { 
+    paddingHorizontal: 16, 
+    paddingBottom: 20 
+  },
+  productCard: { 
+    borderRadius: 12, 
+    marginBottom: 16, 
+    padding: 12, 
+    position: 'relative' 
+  },
+  productImage: { 
+    width: 80, 
+    height: 80, 
+    borderRadius: 8 
+  },
+  productInfo: { 
+    flex: 1, 
+    justifyContent: 'center' 
+  },
+  productName: { 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  },
+  productDesc: { 
+    fontSize: 14 
+  },
+  productPrice: { 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  },
   cartButton: {
-    position: 'absolute', right: 10, bottom: 10,
-    padding: 8, borderRadius: 20
+    position: 'absolute', 
+    bottom: 10,
+    padding: 8, 
+    borderRadius: 20
   },
-  loadingMoreContainer: { paddingVertical: 12, alignItems: 'center' },
+  loadingMoreContainer: { 
+    paddingVertical: 12, 
+    alignItems: 'center' 
+  },
 });

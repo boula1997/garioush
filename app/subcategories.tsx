@@ -1,10 +1,17 @@
-import { StyleSheet, TouchableOpacity, View, ScrollView, Image } from 'react-native';
+import { 
+  StyleSheet, 
+  TouchableOpacity, 
+  View, 
+  ScrollView, 
+  Image 
+} from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Audio } from 'expo-av';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function SubCategoriesScreen() {
   const router = useRouter();
@@ -12,7 +19,8 @@ export default function SubCategoriesScreen() {
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme ?? 'light'];
   const [sound, setSound] = useState<any>();
-  const [subcategories, setSubcategories] = useState([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     if (category) {
@@ -22,12 +30,18 @@ export default function SubCategoriesScreen() {
 
   const fetchSubcategories = async (categoryId: string) => {
     try {
-      const response = await fetch(`https://yousab-tech.com/groshy/public/api/categorySubcategories?category_id=${categoryId}`);
+      const response = await fetch(
+        `https://yousab-tech.com/groshy/public/api/categorySubcategories?category_id=${categoryId}`,
+        {
+          headers: {
+            'locale': i18n.language, // Only adding language header here
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       const json = await response.json();
       if (json.data) {
         setSubcategories(json.data);
-      } else {
-        console.warn(json.data);
       }
     } catch (error) {
       console.error('Error fetching subcategories:', error);
@@ -59,7 +73,7 @@ export default function SubCategoriesScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.gridContainer}>
-        {subcategories.map((subcategory: any, index) => (
+        {subcategories.map((subcategory, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.card, { backgroundColor: themeColors.cardBackground }]}

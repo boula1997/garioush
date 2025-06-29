@@ -1,48 +1,110 @@
-import { StyleSheet, TouchableOpacity, Text, View, ScrollView, Image, I18nManager, Alert } from 'react-native';
+import {
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  View,
+  ScrollView,
+  Image,
+  I18nManager,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
+import * as Updates from 'expo-updates';
 import '../../i18n';
 
 export default function Index() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme];
-  const [sound, setSound] = useState();
-  const [services, setServices] = useState([]);
-  const [langToggle, setLangToggle] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound>();
+  const [services, setServices] = useState<any[]>([]);
+  const { t, i18n: i18nInstance } = useTranslation();
+  const [currentLang, setCurrentLang] = useState(i18n.language);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const changeLanguage = async () => {
-    const newLang = i18n.language === 'en' ? 'ar' : 'en';
-    await i18n.changeLanguage(newLang);
-    I18nManager.forceRTL(newLang === 'ar');
-    setLangToggle(prev => !prev);
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  // Memoized fetch function that always uses current language
+  const fetchCategories = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/categories');
+      console.log('Fetching with language:', currentLang);
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/categories', {
+        headers: {
+          'locale': currentLang, // Using only 'locale' since that works
+          'Content-Type': 'application/json',
+        },
+      });
+      
       const json = await response.json();
+      console.log('API Response:', json);
+      
       if (json.status === 200) {
         setServices(json.data.categories);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentLang]); // Recreates when currentLang changes
+
+  const changeLanguage = async () => {
+    const newLang = currentLang === 'en' ? 'ar' : 'en';
+    const isRTL = newLang === 'ar';
+
+    try {
+      // Update i18n first
+      await i18nInstance.changeLanguage(newLang);
+      
+      // Then update state
+      setCurrentLang(newLang);
+      
+      // For RTL changes, reload needed
+      if (I18nManager.isRTL !== isRTL) {
+        I18nManager.forceRTL(isRTL);
+        Alert.alert(
+          t('restart_required'),
+          t('restart_message'),
+          [
+            {
+              text: t('ok'),
+              onPress: async () => {
+                await Updates.reloadAsync();
+              },
+            },
+          ]
+        );
+      }
+      
+      // Fetch data with new language
+      await fetchCategories();
+      
+    } catch (error) {
+      console.error('Language change failed:', error);
     }
   };
 
+  // Initial fetch
   useEffect(() => {
-    return sound ? () => { sound.unloadAsync(); } : undefined;
+    fetchCategories();
+  }, [fetchCategories]);
+
+  // Cleanup sound
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync().catch(error => {
+          console.error('Error unloading sound:', error);
+        });
+      }
+    };
   }, [sound]);
 
   const playCarSound = async () => {
@@ -61,12 +123,23 @@ export default function Index() {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={changeLanguage} style={[styles.langButton, { backgroundColor: themeColors.tint }]}>
-          <Text style={[styles.langText, { color: themeColors.buttonText }]}>
-            {i18n.language === 'en' ? 'العربية' : 'English'}
-          </Text>
+        <TouchableOpacity
+          onPress={changeLanguage}
+          style={[styles.langButton, { backgroundColor: themeColors.tint }]}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color={themeColors.buttonText} />
+          ) : (
+            <Text style={[styles.langText, { color: themeColors.buttonText }]}>
+              {currentLang.toUpperCase()}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -74,11 +147,23 @@ export default function Index() {
         {services.map((service, index) => (
           <TouchableOpacity
             key={index}
-            style={[styles.card, { backgroundColor: themeColors.cardBackground, shadowColor: themeColors.shadow, borderColor: themeColors.border }]}
+            style={[
+              styles.card,
+              {
+                backgroundColor: themeColors.cardBackground,
+                shadowColor: themeColors.shadow,
+                borderColor: themeColors.border,
+              },
+            ]}
             onPress={() => handleServicePress(service.id)}
+            disabled={isLoading}
           >
             <View style={styles.cardInner}>
-              <Image source={{ uri: service.image }} style={styles.cardImage} resizeMode="contain" />
+              <Image
+                source={{ uri: service.image }}
+                style={styles.cardImage}
+                resizeMode="contain"
+              />
               <ThemedText style={[styles.cardTitle, { color: themeColors.text }]}>
                 {service.title}
               </ThemedText>

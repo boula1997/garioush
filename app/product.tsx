@@ -8,12 +8,16 @@ import {
   Image,
   FlatList,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  I18nManager,
+  Alert
 } from 'react-native';
 import { FontAwesome, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +30,9 @@ export default function ProductDetailsScreen() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { i18n, t } = useTranslation();
+
+  const isRTL = i18n.language === 'ar';
 
   useEffect(() => {
     if (id) {
@@ -37,23 +44,57 @@ export default function ProductDetailsScreen() {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://yousab-tech.com/groshy/public/api/product/${productId}`
+        `https://yousab-tech.com/groshy/public/api/product/${productId}`,
+        {
+          headers: {
+            'locale': i18n.language,
+            'Content-Type': 'application/json',
+          },
+        }
       );
       const json = await response.json();
       
       if (json.data?.product) {
         setProduct(json.data.product);
       } else {
-        setError('Product not found');
+        setError(t('product_not_found'));
       }
     } catch (error) {
       console.error('Error fetching product:', error);
-      setError(error.message);
+      setError(t('fetch_error'));
     } finally {
       setLoading(false);
     }
   };
+ const handleAddToCart = async (productId: number) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
 
+      if (!token) {
+        Alert.alert(t('error'), t('login_first'));
+        return;
+      }
+
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/add/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'locale': i18n.language,
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: productId })
+      });
+
+      const json = await response.json();
+      if (json.success) {
+        Alert.alert(t('product_added'), `${t('total')}: ${json.total} ${t('currency')}`);
+      } else {
+        Alert.alert(t('error'), t('add_to_cart_failed'));
+      }
+    } catch (err) {
+      Alert.alert(t('connection_error'), err.message);
+    }
+  };
   const increaseQuantity = () => setQuantity(prev => prev + 1);
   const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
@@ -75,7 +116,7 @@ export default function ProductDetailsScreen() {
           style={[styles.retryButton, { backgroundColor: colors.tint }]}
           onPress={() => fetchProduct(id as string)}
         >
-          <Text style={styles.retryButtonText}>Retry</Text>
+          <Text style={styles.retryButtonText}>{t('retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -84,12 +125,11 @@ export default function ProductDetailsScreen() {
   if (!product) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.notFoundText, { color: colors.text }]}>Product not found</Text>
+        <Text style={[styles.notFoundText, { color: colors.text }]}>{t('product_not_found')}</Text>
       </View>
     );
   }
 
-  // Use category image as the main product image if no specific product images are available
   const productImages = product.category?.image 
     ? [product.category.image] 
     : ['https://via.placeholder.com/150'];
@@ -98,6 +138,7 @@ export default function ProductDetailsScreen() {
     <ScrollView 
       style={[styles.container, { backgroundColor: colors.background }]}
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ direction: isRTL ? 'rtl' : 'ltr' }}
     >
       {/* Image Slider */}
       <View style={styles.sliderContainer}>
@@ -141,12 +182,15 @@ export default function ProductDetailsScreen() {
       <View style={[styles.infoContainer, { backgroundColor: colors.cardBackground }]}>
         {/* Title and Brand */}
         <View style={styles.titleContainer}>
-          <Text style={[styles.productTitle, { color: colors.text }]}>
+          <Text style={[styles.productTitle, { 
+            color: colors.text,
+            textAlign: isRTL ? 'right' : 'left'
+          }]}>
             {product.title}
           </Text>
-          <View style={styles.priceContainer}>
+          <View style={[styles.priceContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <Text style={[styles.brandText, { color: colors.textSecondary }]}>
-              {product.brand ? `by ${product.brand}` : ''}
+              {product.brand ? `${t('by')} ${product.brand}` : ''}
             </Text>
             <Text style={[styles.price, { color: colors.tint }]}>
               ${product.price.toFixed(2)}
@@ -155,8 +199,8 @@ export default function ProductDetailsScreen() {
         </View>
 
         {/* Price and Add to Cart */}
-        <View style={styles.actionContainer}>
-          <View style={styles.quantityContainer}>
+        <View style={[styles.actionContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.quantityContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
             <TouchableOpacity 
               style={[styles.quantityButton, { borderColor: colors.tint }]}
               onPress={decreaseQuantity}
@@ -177,11 +221,14 @@ export default function ProductDetailsScreen() {
           </View>
           
           <TouchableOpacity 
-            style={[styles.addToCartButton, { backgroundColor: colors.tint }]}
-            onPress={() => console.log('Add to cart', { id, quantity })}
+            style={[styles.addToCartButton, { 
+              backgroundColor: colors.tint,
+              flexDirection: isRTL ? 'row-reverse' : 'row'
+            }]}
+            onPress={() => handleAddToCart(product.id)}
           >
             <MaterialCommunityIcons name="cart-plus" size={20} color="white" />
-            <Text style={styles.addToCartText}>Add to Cart</Text>
+            <Text style={styles.addToCartText}>{t('add_to_cart')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -190,22 +237,34 @@ export default function ProductDetailsScreen() {
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
         {/* Description */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Description
+          <Text style={[styles.sectionTitle, { 
+            color: colors.text,
+            textAlign: isRTL ? 'right' : 'left'
+          }]}>
+            {t('description')}
           </Text>
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          <Text style={[styles.productDescription, { color: colors.textSecondary }]}>
+          <Text style={[styles.productDescription, { 
+            color: colors.textSecondary,
+            textAlign: isRTL ? 'right' : 'left'
+          }]}>
             {product.description}
           </Text>
         </View>
 
         {/* Category */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Category
+          <Text style={[styles.sectionTitle, { 
+            color: colors.text,
+            textAlign: isRTL ? 'right' : 'left'
+          }]}>
+            {t('category')}
           </Text>
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          <Text style={[styles.productDescription, { color: colors.textSecondary }]}>
+          <Text style={[styles.productDescription, { 
+            color: colors.textSecondary,
+            textAlign: isRTL ? 'right' : 'left'
+          }]}>
             {product.category?.title} - {product.subcategory?.title}
           </Text>
         </View>
@@ -213,12 +272,15 @@ export default function ProductDetailsScreen() {
         {/* Rating */}
         {product.rate && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Rating
+            <Text style={[styles.sectionTitle, { 
+              color: colors.text,
+              textAlign: isRTL ? 'right' : 'left'
+            }]}>
+              {t('rating')}
             </Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <View style={styles.ratingContainer}>
-              <View style={styles.starContainer}>
+            <View style={[styles.ratingContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.starContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 {[...Array(5)].map((_, i) => (
                   <FontAwesome 
                     key={i}
@@ -238,20 +300,28 @@ export default function ProductDetailsScreen() {
         {/* Additional Details */}
         {product.details && Object.keys(product.details).length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Specifications
+            <Text style={[styles.sectionTitle, { 
+              color: colors.text,
+              textAlign: isRTL ? 'right' : 'left'
+            }]}>
+              {t('specifications')}
             </Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
             {Object.entries(product.details).map(([key, value], index) => (
-              <View key={index} style={styles.featureItem}>
+              <View key={index} style={[styles.featureItem, { 
+                flexDirection: isRTL ? 'row-reverse' : 'row'
+              }]}>
                 <MaterialIcons 
                   name="check-circle" 
                   size={18} 
                   color={colors.tint} 
-                  style={styles.featureIcon}
+                  style={isRTL ? styles.featureIconRTL : styles.featureIcon}
                 />
-                <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-                  {key}: {value}
+                <Text style={[styles.featureText, { 
+                  color: colors.textSecondary,
+                  textAlign: isRTL ? 'right' : 'left'
+                }]}>
+                  {t(key)}: {value}
                 </Text>
               </View>
             ))}
@@ -325,23 +395,18 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   actionContainer: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   price: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 200,
-    marginTop: -6,
   },
   quantityContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 12,
   },
   priceContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -360,7 +425,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   addToCartButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -372,7 +436,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 8,
+    marginHorizontal: 8,
   },
   detailsContainer: {
     padding: 20,
@@ -399,12 +463,15 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   featureItem: {
-    flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 10,
   },
   featureIcon: {
     marginRight: 10,
+    marginTop: 2,
+  },
+  featureIconRTL: {
+    marginLeft: 10,
     marginTop: 2,
   },
   featureText: {
@@ -413,17 +480,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   ratingContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   starContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
   ratingText: {
     fontSize: 16,
-    marginLeft: 8,
+    marginHorizontal: 8,
     fontWeight: '600',
   },
 });

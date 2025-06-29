@@ -1,4 +1,3 @@
-// No changes here
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -7,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  I18nManager,
   Platform
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 
 export default function CartScreen() {
   const router = useRouter();
@@ -24,6 +25,8 @@ export default function CartScreen() {
   const [total, setTotal] = useState(0);
   const [token, setToken] = useState(null);
   const { t } = useTranslation();
+
+  const isRTL = I18nManager.isRTL;
 
   useEffect(() => {
     const getToken = async () => {
@@ -36,23 +39,20 @@ export default function CartScreen() {
         console.error('Error retrieving token:', error);
       }
     };
-
     getToken();
   }, []);
 
   const fetchUserCart = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch(
-        'https://yousab-tech.com/groshy/public/api/auth/cart',
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/cart', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          locale: i18n.language // ✅ Language header
         }
-      );
+      });
       const data = await response.json();
       if (data.success) {
         const updatedCart = data.cart ? Object.values(data.cart) : [];
@@ -81,7 +81,8 @@ export default function CartScreen() {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            locale: i18n.language
           },
           body: JSON.stringify({ hash })
         }
@@ -106,7 +107,8 @@ export default function CartScreen() {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            locale: i18n.language
           },
           body: JSON.stringify({ hash })
         }
@@ -136,29 +138,35 @@ export default function CartScreen() {
         {
           backgroundColor: colors.cardBackground,
           borderColor: colors.border,
-          shadowColor: colors.shadow
+          shadowColor: colors.shadow,
+          flexDirection: isRTL ? 'row-reverse' : 'row'
         }
       ]}
     >
       <Image
         source={{ uri: item.image || 'https://via.placeholder.com/70' }}
-        style={styles.image}
+        style={[styles.image, { marginLeft: isRTL ? 12 : 0, marginRight: isRTL ? 0 : 12 }]}
       />
       <View style={styles.detailsContainer}>
         <Text style={[styles.title, { color: colors.text }]}>
-          {t(item.title)}
+          {item.title}
         </Text>
         <Text style={[styles.price, { color: colors.tint }]}>
-          ${t(item.price)}
+          ${item.price}
         </Text>
       </View>
-      <View style={styles.actionsContainer}>
+      <View
+        style={[
+          styles.actionsContainer,
+          { flexDirection: isRTL ? 'row-reverse' : 'row', marginLeft: isRTL ? 0 : 10, marginRight: isRTL ? 10 : 0 }
+        ]}
+      >
         <View style={styles.quantityContainer}>
           <TouchableOpacity onPress={() => updateQuantity(item.hash, 'decrement')}>
             <MaterialIcons name="remove-circle-outline" size={24} color={colors.tint} />
           </TouchableOpacity>
           <Text style={[styles.quantityText, { color: colors.text }]}>
-            {t(item.quantity)}
+            {item.quantity}
           </Text>
           <TouchableOpacity onPress={() => updateQuantity(item.hash, 'increment')}>
             <MaterialIcons name="add-circle-outline" size={24} color={colors.tint} />
@@ -169,7 +177,7 @@ export default function CartScreen() {
             name="delete"
             size={24}
             color={colors.tint}
-            style={{ marginLeft: 20 }}
+            style={{ marginHorizontal: 10 }}
           />
         </TouchableOpacity>
       </View>
@@ -221,7 +229,6 @@ const styles = StyleSheet.create({
     padding: 16
   },
   cartItem: {
-    flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderRadius: 10,
@@ -241,8 +248,7 @@ const styles = StyleSheet.create({
   image: {
     width: 70,
     height: 70,
-    borderRadius: 8,
-    marginRight: 12
+    borderRadius: 8
   },
   detailsContainer: {
     flex: 1
@@ -256,9 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   actionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 10
+    alignItems: 'center'
   },
   quantityContainer: {
     flexDirection: 'row',
