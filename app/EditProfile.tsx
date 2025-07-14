@@ -43,7 +43,7 @@ export default function EditProfileScreen() {
     try {
       console.log('Fetching profile with token:', authToken);
       const response = await fetch(
-        'https://yousab-tech.com/groshy/public/api/auth/user-profile',
+        'http://oilminingshah.com/groshy/public/api/auth/user-profile',
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -95,7 +95,7 @@ export default function EditProfileScreen() {
         formData.append('password', password);
       }
 
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/profile/update', {
+      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/profile/update', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

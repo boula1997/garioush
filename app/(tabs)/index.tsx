@@ -35,8 +35,9 @@ export default function Index() {
     setIsLoading(true);
     try {
       console.log('Fetching with language:', currentLang);
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/categories', {
-        headers: {
+      // const response = await fetch('http://oilminingshah.com/groshy/public/api/categories', {
+       const response = await fetch('http://oilminingshah.com/groshy/public/api/categories', {
+      headers: {
           'locale': currentLang, // Using only 'locale' since that works
           'Content-Type': 'application/json',
         },

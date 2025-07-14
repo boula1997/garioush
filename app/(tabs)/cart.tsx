@@ -45,7 +45,7 @@ export default function CartScreen() {
   const fetchUserCart = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/cart', {
+      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/cart', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ export default function CartScreen() {
     if (!token) return;
     try {
       const response = await fetch(
-        `https://yousab-tech.com/groshy/public/api/auth/update/item/count?action=${action}`,
+        `http://oilminingshah.com/groshy/public/api/auth/update/item/count?action=${action}`,
         {
           method: 'POST',
           headers: {
@@ -102,7 +102,7 @@ export default function CartScreen() {
     if (!token) return;
     try {
       const response = await fetch(
-        'https://yousab-tech.com/groshy/public/api/auth/remove/cart',
+        'http://oilminingshah.com/groshy/public/api/auth/remove/cart',
         {
           method: 'POST',
           headers: {

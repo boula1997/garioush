@@ -32,7 +32,7 @@ export default function MyProfileScreen() {
     try {
       console.log('Fetching profile with token:', authToken);
       const response = await fetch(
-        'https://yousab-tech.com/groshy/public/api/auth/user-profile',
+        'http://oilminingshah.com/groshy/public/api/auth/user-profile',
         {
           headers: {
             Authorization: `Bearer ${authToken}`,

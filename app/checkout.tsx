@@ -53,7 +53,7 @@ export default function CheckoutScreen() {
 
   const fetchUserProfile = async (authToken) => {
     try {
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/user-profile', {
+      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/user-profile', {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -90,7 +90,7 @@ const handleCheckout = async () => {
 
   try {
     const response = await fetch(
-      'https://yousab-tech.com/groshy/public/api/auth/order/store',
+      'http://oilminingshah.com/groshy/public/api/auth/order/store',
       {
         method: 'POST',
         headers: {
