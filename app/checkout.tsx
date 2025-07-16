@@ -8,141 +8,158 @@ import {
   Image,
   ScrollView,
   Alert,
+  ActivityIndicator,
+  I18nManager,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function CheckoutScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { cart } = useLocalSearchParams();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const parsedCart = Array.isArray(cart) ? cart[0] : cart;
   const parsedCartData = JSON.parse(parsedCart || '[]');
 
   const [address, setAddress] = useState('');
   const [mobile, setMobile] = useState('');
-  const [selectedPayment, setSelectedPayment] = useState('credit');
-  const [isShippingOpen, setIsShippingOpen] = useState(false);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState('wallet');
+  const [isShippingOpen, setIsShippingOpen] = useState(true);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(true);
   const [token, setToken] = useState('');
-  const [walletBalance, setWalletBalance] = useState(null); // For storing wallet balance
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
-    const paymentMethods = [
-    { id: 'wallet', name: 'Wallet', icon: 'wallet', iconType: FontAwesome },
-    { id: 'card', name: 'Cards', icon: 'credit-card', iconType: FontAwesome },
-    { id: 'stc_pay', name: 'STC Pay', icon: 'mobile', iconType: FontAwesome },
+  const paymentMethods = [
+    { id: 'wallet', name: t('wallet'), icon: 'wallet', iconType: FontAwesome },
+    { id: 'card', name: t('cards'), icon: 'credit-card', iconType: FontAwesome },
+    { id: 'stc_pay', name: t('stc_pay'), icon: 'mobile', iconType: FontAwesome },
   ];
 
   useEffect(() => {
     const loadToken = async () => {
-      const storedToken = await AsyncStorage.getItem('authToken');
-      if (storedToken) {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        if (!storedToken) {
+          Alert.alert(t('error'), t('not_authenticated'));
+          router.push('/login');
+          return;
+        }
         setToken(storedToken);
-        fetchUserProfile(storedToken); // Fetch user profile
-      } else {
-        Alert.alert('Error', 'User not authenticated.');
+        fetchUserProfile(storedToken);
+      } catch (error) {
+        Alert.alert(t('error'), t('auth_error'));
       }
     };
     loadToken();
   }, []);
 
   const fetchUserProfile = async (authToken) => {
+    setLoading(true);
     try {
-      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/user-profile', {
+      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/user-profile', {
         method: 'GET',
         headers: {
-          Accept: 'application/json',
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
+          'Authorization': `Bearer ${authToken}`,
+          'locale': i18n.language
         },
       });
 
       const data = await response.json();
-      if (data) {
-        console.log("data",data);
-        setWalletBalance(data.balance); // Assuming `wallet_balance` is the key for wallet balance
+      if (response.ok) {
+        setWalletBalance(data.balance || 0);
       } else {
-        console.error('Error fetching profile:', data.message || 'Unknown error');
-        Alert.alert('Error', 'Failed to fetch user profile.');
+        throw new Error(data.message || t('fetch_profile_failed'));
       }
     } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Something went wrong while fetching user profile.');
+      Alert.alert(t('error'), error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const calculateTotal = () => {
     return parsedCartData
       .reduce((total, item) => total + parseFloat(item.price) * (item.quantity ?? 1), 0)
-      ;
+      .toFixed(2);
   };
 
-const handleCheckout = async () => {
-  if (!address || !mobile) {
-    Alert.alert('Missing Info', 'Please fill out all fields!');
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      'http://oilminingshah.com/groshy/public/api/auth/order/store',
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          address: address,
-          paymentMethod: selectedPayment,
-        }),
-      }
-    );
-
-    const data = await response.json();
-     console.log(data);
-    if (response.ok && data.order) {
-      router.push({
-        pathname: '/OrderDetailsScreen',
-        params: { order: JSON.stringify(data.order) },
-      });
-    } else {
-      // Check for NoEnoughBalance error
-      if (data?.errors?.message === "NoEnoughBalance") {
-        console.log("Insufficient Balance", "You do not have enough balance in your wallet.");
-        Alert.alert("Insufficient Balance", "You do not have enough balance in your wallet.");
-      } else {
-        Alert.alert('Order Failed', data.success || data.message || 'Please try again.');
-      }
+  const handleCheckout = async () => {
+    if (!address || !mobile) {
+      Alert.alert(t('missing_info'), t('fill_all_fields'));
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    Alert.alert('Error', 'Something went wrong.');
-  }
-};
 
-  
+    setProcessing(true);
+    try {
+      const response = await fetch(
+        'https://yousab-tech.com/groshy/public/api/auth/order/store',
+        {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'locale': i18n.language
+          },
+          body: JSON.stringify({
+            address: address,
+            mobile: mobile,
+            paymentMethod: selectedPayment,
+            cart: parsedCartData
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok && data.order) {
+        router.push({
+          pathname: '/OrderDetailsScreen',
+          params: { order: JSON.stringify(data.order) },
+        });
+      } else {
+        if (data?.errors?.message === "NoEnoughBalance") {
+          Alert.alert(t('insufficient_balance'), t('not_enough_balance'));
+        } else {
+          Alert.alert(t('order_failed'), data.message || t('try_again'));
+        }
+      }
+    } catch (error) {
+      Alert.alert(t('error'), t('checkout_error'));
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.tint }]}>Checkout</Text>
+    <ScrollView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ direction: isRTL ? 'rtl' : 'ltr' }}
+    >
+      <Text style={[styles.title, { color: colors.tint }]}>{t('checkout')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        Please provide your shipping details and select a payment method.
+        {t('checkout_description')}
       </Text>
 
       {/* Shipping Details */}
       <View style={[styles.section, { borderColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => setIsShippingOpen(!isShippingOpen)}
-          style={styles.toggleButton}
+          style={[styles.toggleButton, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
         >
           <Text style={[styles.sectionTitle, { color: colors.tint }]}>
-            <MaterialIcons name="local-shipping" size={20} /> Shipping Details
+            <MaterialIcons name="local-shipping" size={20} /> {t('shipping_details')}
           </Text>
           <MaterialIcons
             name={isShippingOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
@@ -154,15 +171,29 @@ const handleCheckout = async () => {
         {isShippingOpen && (
           <View>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
-              placeholder="Enter your address"
+              style={[
+                styles.input, 
+                { 
+                  backgroundColor: colors.inputBackground, 
+                  borderColor: colors.border,
+                  textAlign: isRTL ? 'right' : 'left'
+                }
+              ]}
+              placeholder={t('enter_address')}
               placeholderTextColor={colors.textSecondary}
               value={address}
               onChangeText={setAddress}
             />
             <TextInput
-              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
-              placeholder="Enter your mobile number"
+              style={[
+                styles.input, 
+                { 
+                  backgroundColor: colors.inputBackground, 
+                  borderColor: colors.border,
+                  textAlign: isRTL ? 'right' : 'left'
+                }
+              ]}
+              placeholder={t('enter_mobile')}
               placeholderTextColor={colors.textSecondary}
               value={mobile}
               onChangeText={setMobile}
@@ -176,10 +207,10 @@ const handleCheckout = async () => {
       <View style={[styles.section, { borderColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => setIsPaymentOpen(!isPaymentOpen)}
-          style={styles.toggleButton}
+          style={[styles.toggleButton, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
         >
           <Text style={[styles.sectionTitle, { color: colors.tint }]}>
-            <MaterialIcons name="payment" size={20} /> Payment Method
+            <MaterialIcons name="payment" size={20} /> {t('payment_method')}
           </Text>
           <MaterialIcons
             name={isPaymentOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
@@ -194,30 +225,44 @@ const handleCheckout = async () => {
               <TouchableOpacity
                 key={method.id}
                 style={[
-                  styles.paymentMethod,
-                  {
-                    backgroundColor:
-                      selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
+                  styles.paymentMethod, 
+                  { 
+                    backgroundColor: selectedPayment === method.id ? colors.tintLight : colors.inputBackground,
                     borderColor: selectedPayment === method.id ? colors.tint : colors.border,
-                  },
+                    flexDirection: isRTL ? 'row-reverse' : 'row'
+                  }
                 ]}
                 onPress={() => setSelectedPayment(method.id)}
+                disabled={method.id === 'wallet' && parseFloat(calculateTotal()) > walletBalance}
               >
                 <method.iconType
                   name={method.icon}
                   size={24}
-                  color={selectedPayment === method.id ? colors.tint : colors.text}
+                  color={
+                    selectedPayment === method.id ? colors.tint : 
+                    (method.id === 'wallet' && parseFloat(calculateTotal()) > walletBalance) ? colors.textDisabled : colors.text
+                  }
                 />
                 <Text
                   style={[
-                    styles.paymentText,
-                    { color: selectedPayment === method.id ? colors.tint : colors.text },
+                    styles.paymentText, 
+                    { 
+                      color: 
+                        selectedPayment === method.id ? colors.tint : 
+                        (method.id === 'wallet' && parseFloat(calculateTotal()) > walletBalance) ? colors.textDisabled : colors.text,
+                      [isRTL ? 'marginRight' : 'marginLeft']: 12
+                    }
                   ]}
                 >
-                  {method.name} {method.id=="wallet"?walletBalance:""}
+                  {method.name} {method.id === "wallet" && `(${walletBalance} ${t('currency')})`}
                 </Text>
                 {selectedPayment === method.id && (
-                  <FontAwesome name="check-circle" size={20} color={colors.tint} style={styles.checkIcon} />
+                  <FontAwesome 
+                    name="check-circle" 
+                    size={20} 
+                    color={colors.tint} 
+                    style={isRTL ? { marginRight: 'auto' } : { marginLeft: 'auto' }} 
+                  />
                 )}
               </TouchableOpacity>
             ))}
@@ -228,16 +273,25 @@ const handleCheckout = async () => {
       {/* Order Summary */}
       <View style={[styles.section, { borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.tint }]}>
-          <MaterialIcons name="receipt" size={20} /> Order Summary
+          <MaterialIcons name="receipt" size={20} /> {t('order_summary')}
         </Text>
 
         {parsedCartData.map((item) => (
-          <View key={item.id} style={[styles.itemCard, { backgroundColor: colors.cardBackground }]}>
+          <View 
+            key={item.id} 
+            style={[
+              styles.itemCard, 
+              { 
+                backgroundColor: colors.cardBackground,
+                flexDirection: isRTL ? 'row-reverse' : 'row'
+              }
+            ]}
+          >
             <Image source={{ uri: item.image }} style={styles.itemImage} />
             <View style={styles.itemDetails}>
               <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
-              <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
-              <View style={styles.itemPriceContainer}>
+              <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{item.description}</Text>
+              <View style={[styles.itemPriceContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
                 <Text style={[styles.itemQuantity, { color: colors.text }]}>
                   {item.quantity} x ${item.price.toFixed(2)}
                 </Text>
@@ -251,18 +305,25 @@ const handleCheckout = async () => {
 
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <View style={styles.totalContainer}>
-          <Text style={[styles.totalLabel, { color: colors.text }]}>Total:</Text>
+        <View style={[styles.totalContainer, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <Text style={[styles.totalLabel, { color: colors.text }]}>{t('total')}:</Text>
           <Text style={[styles.totalAmount, { color: colors.tint }]}>${calculateTotal()}</Text>
         </View>
       </View>
 
       <TouchableOpacity
-        style={[styles.confirmButton, { backgroundColor: colors.tint }]}
+        style={[styles.confirmButton, { 
+          backgroundColor: colors.tint,
+          opacity: (!address || !mobile || processing) ? 0.6 : 1 
+        }]}
         onPress={handleCheckout}
-        disabled={!address || !mobile}
+        disabled={!address || !mobile || processing}
       >
-        <Text style={styles.buttonText}>Complete Purchase</Text>
+        {processing ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.buttonText}>{t('complete_purchase')}</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -271,7 +332,7 @@ const handleCheckout = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 16,
   },
   title: {
     fontSize: 28,
@@ -285,7 +346,7 @@ const styles = StyleSheet.create({
   section: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 10,
+    marginBottom: 16,
     borderWidth: 1,
   },
   sectionTitle: {
@@ -294,7 +355,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   toggleButton: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -307,7 +367,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   paymentMethod: {
-    flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderRadius: 8,
@@ -316,25 +375,19 @@ const styles = StyleSheet.create({
   },
   paymentText: {
     fontSize: 16,
-    marginLeft: 12,
     flex: 1,
   },
-  checkIcon: {
-    marginLeft: 'auto',
-  },
   itemCard: {
-    flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     marginBottom: 12,
     borderRadius: 8,
-    borderColor: '#ddd',
   },
   itemImage: {
     width: 80,
     height: 80,
     borderRadius: 8,
-    marginRight: 16,
+    marginHorizontal: 16,
   },
   itemDetails: {
     flex: 1,
@@ -348,7 +401,6 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   itemPriceContainer: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
   },
@@ -364,7 +416,6 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   totalContainer: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
   },
   totalLabel: {

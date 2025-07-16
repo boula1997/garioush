@@ -81,8 +81,8 @@ export default function CartScreen() {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            locale: i18n.language
+            // 'Content-Type': 'application/json',
+            // locale: i18n.language
           },
           body: JSON.stringify({ hash })
         }
