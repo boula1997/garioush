@@ -183,7 +183,20 @@
     "order_failed": "Order Failed",
     "try_again": "Please try again",
     "checkout_error": "Checkout error occurred",
-    "currency": "EGP"
+    "currency": "EGP",
+
+    "orderDetails": "Order Details",
+    "orderId": "Order ID:",
+    "total": "Total:",
+    "address": "Address:",
+    "createdAt": "Created At:",
+    "products": "Products:",
+    "quantity": "Quantity",
+    "subtotal": "Subtotal"
+
+
+
+
 
 
 

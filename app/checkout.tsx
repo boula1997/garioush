@@ -66,7 +66,7 @@ export default function CheckoutScreen() {
   const fetchUserProfile = async (authToken) => {
     setLoading(true);
     try {
-      const response = await fetch('https://yousab-tech.com/groshy/public/api/auth/user-profile', {
+      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/user-profile', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -104,7 +104,7 @@ export default function CheckoutScreen() {
     setProcessing(true);
     try {
       const response = await fetch(
-        'https://yousab-tech.com/groshy/public/api/auth/order/store',
+        'http://oilminingshah.com/groshy/public/api/auth/order/store',
         {
           method: 'POST',
           headers: {
@@ -123,7 +123,7 @@ export default function CheckoutScreen() {
       );
 
       const data = await response.json();
-      if (response.ok && data.order) {
+      if (data.order) {
         router.push({
           pathname: '/OrderDetailsScreen',
           params: { order: JSON.stringify(data.order) },

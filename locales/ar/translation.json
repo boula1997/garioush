@@ -182,7 +182,15 @@
     "order_failed": "فشل الطلب",
     "try_again": "يرجى المحاولة مرة أخرى",
     "checkout_error": "حدث خطأ أثناء الدفع",
-    "currency": "جنيه"
+    "currency": "جنيه",
+    "orderDetails": "تفاصيل الطلب",
+    "orderId": "رقم الطلب:",
+    "total": "الإجمالي:",
+    "address": "العنوان:",
+    "createdAt": "تاريخ الإنشاء:",
+    "products": "المنتجات:",
+    "quantity": "الكمية",
+    "subtotal": "الإجمالي الفرعي"
 
 
 

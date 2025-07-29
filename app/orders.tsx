@@ -39,7 +39,7 @@ export default function UserOrdersScreen() {
         setToken(storedToken);
 
         const response = await fetch(
-          'https://yousab-tech.com/groshy/public/api/auth/orders?per_page=5',
+          'http://oilminingshah.com/groshy/public/api/auth/orders?per_page=5',
           {
             method: 'GET',
             headers: {
