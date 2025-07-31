@@ -16,6 +16,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
+import axios from 'axios';
 
 export default function CartScreen() {
   const router = useRouter();
@@ -73,6 +74,8 @@ export default function CartScreen() {
   );
 
   const updateQuantity = async (hash, action) => {
+    // alert(action);
+    // alert(hash);
     if (!token) return;
     try {
       const response = await fetch(
@@ -81,17 +84,19 @@ export default function CartScreen() {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
-            // 'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
             // locale: i18n.language
           },
           body: JSON.stringify({ hash })
         }
       );
       const data = await response.json();
+      axios.post('https://yousab-tech.com/workspace/public/api/track', { data: response, label: "label", time: new Date().toISOString(), }).catch((err) => { alert('Failed to send debug log'); });
+
       if (data.success) {
         fetchUserCart();
       } else {
-        console.error('Failed to update quantity:', data.message);
+        console.error('Failed to update quantity:', data);
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
