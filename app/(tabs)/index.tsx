@@ -29,6 +29,7 @@ export default function Index() {
   const { t, i18n: i18nInstance } = useTranslation();
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const [isLoading, setIsLoading] = useState(false);
+  const [oldLang, setIOldLang] = useState("");
 
   // Memoized fetch function that always uses current language
   const fetchCategories = useCallback(async () => {
@@ -49,6 +50,9 @@ export default function Index() {
       if (json.status === 200) {
         setServices(json.data.categories);
       }
+
+      setIOldLang(currentLang=="ar"?"en":"ar");
+
     } catch (error) {
       console.error('Error fetching categories:', error);
     } finally {
@@ -63,25 +67,24 @@ export default function Index() {
     try {
       // Update i18n first
       await i18nInstance.changeLanguage(newLang);
-      
       // Then update state
       setCurrentLang(newLang);
       
       // For RTL changes, reload needed
       if (I18nManager.isRTL !== isRTL) {
         I18nManager.forceRTL(isRTL);
-        Alert.alert(
-          t('restart_required'),
-          t('restart_message'),
-          [
-            {
-              text: t('ok'),
-              onPress: async () => {
-                await Updates.reloadAsync();
-              },
-            },
-          ]
-        );
+        // Alert.alert(
+        //   t('restart_required'),
+        //   t('restart_message'),
+        //   [
+        //     {
+        //       text: t('ok'),
+        //       onPress: async () => {
+        //         await Updates.reloadAsync();
+        //       },
+        //     },
+        //   ]
+        // );
       }
       
       // Fetch data with new language
@@ -138,7 +141,7 @@ export default function Index() {
             <ActivityIndicator color={themeColors.buttonText} />
           ) : (
             <Text style={[styles.langText, { color: themeColors.buttonText }]}>
-              {currentLang.toUpperCase()}
+              {oldLang.toUpperCase()}
             </Text>
           )}
         </TouchableOpacity>
