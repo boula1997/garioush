@@ -91,7 +91,7 @@ export default function CartScreen() {
         }
       );
       const data = await response.json();
-      axios.post('https://yousab-tech.com/workspace/public/api/track', { data: response, label: "label", time: new Date().toISOString(), }).catch((err) => { alert('Failed to send debug log'); });
+      // axios.post('https://yousab-tech.com/workspace/public/api/track', { data: response, label: "label", time: new Date().toISOString(), }).catch((err) => { alert('Failed to send debug log'); });
 
       if (data.success) {
         fetchUserCart();
