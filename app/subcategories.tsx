@@ -31,7 +31,7 @@ export default function SubCategoriesScreen() {
   const fetchSubcategories = async (categoryId: string) => {
     try {
       const response = await fetch(
-        `http://oilminingshah.com/groshy/public/api/categorySubcategories?category_id=${categoryId}`,
+        `https://oilminingshah.com/groshy/public/api/categorySubcategories?category_id=${categoryId}`,
         {
           headers: {
             'locale': i18n.language, // Only adding language header here

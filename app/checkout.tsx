@@ -66,7 +66,7 @@ export default function CheckoutScreen() {
   const fetchUserProfile = async (authToken) => {
     setLoading(true);
     try {
-      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/user-profile', {
+      const response = await fetch('https://oilminingshah.com/groshy/public/api/auth/user-profile', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -104,7 +104,7 @@ export default function CheckoutScreen() {
     setProcessing(true);
     try {
       const response = await fetch(
-        'http://oilminingshah.com/groshy/public/api/auth/order/store',
+        'https://oilminingshah.com/groshy/public/api/auth/order/store',
         {
           method: 'POST',
           headers: {

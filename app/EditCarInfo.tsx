@@ -53,7 +53,7 @@ export default function EditCarInfoScreen() {
         }
 
         const response = await axios.get(
-          'http://oilminingshah.com/groshy/public/api/auth/carProfile',
+          'https://oilminingshah.com/groshy/public/api/auth/carProfile',
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ export default function EditCarInfoScreen() {
       }
 
       const response = await axios.post(
-        'http://oilminingshah.com/groshy/public/api/auth/carProfile/store',
+        'https://oilminingshah.com/groshy/public/api/auth/carProfile/store',
         carData,
         {
           headers: {

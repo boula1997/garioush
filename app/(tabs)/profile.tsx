@@ -36,7 +36,7 @@ export default function ProfileScreen() {
   const fetchProfileData = async (authToken) => {
     try {
       const response = await fetch(
-        'http://oilminingshah.com/groshy/public/api/auth/user-profile',
+        'https://oilminingshah.com/groshy/public/api/auth/user-profile',
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -139,7 +139,7 @@ export default function ProfileScreen() {
       throw new Error('Token not found.');
     }
 
-    const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/logout', {
+    const response = await fetch('https://oilminingshah.com/groshy/public/api/auth/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

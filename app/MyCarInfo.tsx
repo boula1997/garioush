@@ -19,7 +19,7 @@ export default function MyCarInfoScreen() {
         setLoading(false);
         return;
       }
-      fetch('http://oilminingshah.com/groshy/public/api/auth/carProfile', {
+      fetch('https://oilminingshah.com/groshy/public/api/auth/carProfile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

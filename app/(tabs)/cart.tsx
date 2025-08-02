@@ -46,7 +46,7 @@ export default function CartScreen() {
   const fetchUserCart = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/cart', {
+      const response = await fetch('https://oilminingshah.com/groshy/public/api/auth/cart', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -79,7 +79,7 @@ export default function CartScreen() {
     if (!token) return;
     try {
       const response = await fetch(
-        `http://oilminingshah.com/groshy/public/api/auth/update/item/count?action=${action}`,
+        `https://oilminingshah.com/groshy/public/api/auth/update/item/count?action=${action}`,
         {
           method: 'POST',
           headers: {
@@ -91,7 +91,7 @@ export default function CartScreen() {
         }
       );
       const data = await response.json();
-      // axios.post('https://yousab-tech.com/workspace/public/api/track', { data: response, label: "label", time: new Date().toISOString(), }).catch((err) => { alert('Failed to send debug log'); });
+      axios.post('https://yousab-tech.com/workspace/public/api/track', { data: response, label: "label", time: new Date().toISOString(), }).catch((err) => { alert('Failed to send debug log'); });
 
       if (data.success) {
         fetchUserCart();
@@ -107,7 +107,7 @@ export default function CartScreen() {
     if (!token) return;
     try {
       const response = await fetch(
-        'http://oilminingshah.com/groshy/public/api/auth/remove/cart',
+        'https://oilminingshah.com/groshy/public/api/auth/remove/cart',
         {
           method: 'POST',
           headers: {

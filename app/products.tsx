@@ -50,7 +50,7 @@ export default function ProductsScreen() {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://oilminingshah.com/groshy/public/api/subcategoryProducts?subcategory_id=${subcategoryId}&per_page=${pagination.per_page}&page=${page}`,
+        `https://oilminingshah.com/groshy/public/api/subcategoryProducts?subcategory_id=${subcategoryId}&per_page=${pagination.per_page}&page=${page}`,
         {
           headers: {
             'locale': i18n.language,
@@ -82,7 +82,7 @@ export default function ProductsScreen() {
         return;
       }
 
-      const response = await fetch('http://oilminingshah.com/groshy/public/api/auth/add/cart', {
+      const response = await fetch('https://oilminingshah.com/groshy/public/api/auth/add/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

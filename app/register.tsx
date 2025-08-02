@@ -36,7 +36,7 @@ export default function AuthScreen() {
   const handleAuthSubmit = async () => {
     try {
       const response = await axios.post(
-        'http://oilminingshah.com/groshy/public/api/auth/register',
+        'https://oilminingshah.com/groshy/public/api/auth/register',
         {
           email: authData.email,
           password: authData.password,

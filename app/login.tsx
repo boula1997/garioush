@@ -20,7 +20,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       const response = await fetch(
-        'http://oilminingshah.com/groshy/public/api/auth/login',
+        'https://oilminingshah.com/groshy/public/api/auth/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
