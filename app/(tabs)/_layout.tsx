@@ -46,17 +46,21 @@ export default function TabLayout() {
       : undefined;
   }, [sound]);
 
-  const playSound = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(
-        require('@/assets/car2.mp3')
-      );
-      setSound(sound);
-      await sound.playAsync();
-    } catch (error) {
-      console.error('Error playing sound:', error);
-    }
-  };
+const playSound = async () => {
+  try {
+    const soundStatus = await AsyncStorage.getItem('soundStatus');
+    if (soundStatus !== 'on') return; // Only play if status is "on"
+
+    const { sound } = await Audio.Sound.createAsync(
+      require('@/assets/car2.mp3')
+    );
+    setSound(sound);
+    await sound.playAsync();
+  } catch (error) {
+    console.error('Error playing sound:', error);
+  }
+};
+
 
   const toggleTheme = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';

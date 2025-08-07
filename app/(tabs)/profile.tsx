@@ -18,6 +18,7 @@ export default function ProfileScreen() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const [isSoundOn, setIsSoundOn] = useState(true);
 
   useEffect(() => {
     const getTokenAndFetchData = async () => {
@@ -32,6 +33,22 @@ export default function ProfileScreen() {
     };
     getTokenAndFetchData();
   }, []);
+
+  useEffect(() => {
+  const loadSoundSetting = async () => {
+    const soundStatus = await AsyncStorage.getItem('soundStatus');
+    if (soundStatus !== null) {
+      setIsSoundOn(soundStatus === 'on');
+    }
+  };
+  loadSoundSetting();
+}, []);
+
+const toggleSound = async () => {
+  const newStatus = !isSoundOn;
+  setIsSoundOn(newStatus);
+  await AsyncStorage.setItem('soundStatus', newStatus ? 'on' : 'off');
+};
 
   const fetchProfileData = async (authToken) => {
     try {
@@ -128,6 +145,21 @@ export default function ProfileScreen() {
     </TouchableOpacity>
   ))}
 
+  <TouchableOpacity
+  style={[styles.menuItem, { backgroundColor: colors.cardBackground }]}
+  onPress={toggleSound}
+  activeOpacity={0.7}
+>
+  <MaterialIcons
+    name={isSoundOn ? 'volume-up' : 'volume-off'}
+    size={24}
+    color={colors.tint}
+  />
+  <ThemedText style={styles.menuText}>
+    {isSoundOn ? t('Sound On') : t('Sound Off')}
+  </ThemedText>
+</TouchableOpacity>
+
   {/* Logout Option */}
   <TouchableOpacity
     style={[styles.menuItem, { backgroundColor: colors.cardBackground }]}
@@ -164,6 +196,9 @@ export default function ProfileScreen() {
     <MaterialIcons name="logout" size={24} color={colors.tint} />
     <ThemedText style={styles.menuText}>{t('Logout')}</ThemedText>
   </TouchableOpacity>
+
+
+
 </View>
 
     </View>
