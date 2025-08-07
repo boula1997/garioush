@@ -192,13 +192,19 @@
     "createdAt": "Created At:",
     "products": "Products:",
     "quantity": "Quantity",
-    "subtotal": "Subtotal"
-
-
-
-
-
-
+    "subtotal": "Subtotal",
+    "not_found": "This screen does not exist.",
+    "go_to_home": "Go to home screen!",
+    "loading_car_info": "Loading car info...",
+    "loading_profile": "Loading profile...",
+    "upload": "Upload",
+    "failed_to_load_car_info": "Failed to load car information.",
+    "car_details": "Car Details",
+    "error_fetching_profile": "Error fetching profile data:",
+    "user": "User",
+    "email": "Email",
+    "phone": "Phone",
+    "egp": "EGP"
 
 
 

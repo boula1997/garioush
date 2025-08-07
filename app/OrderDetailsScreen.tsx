@@ -30,7 +30,7 @@ const OrderDetailsScreen = () => {
 
       <View style={styles.section}>
         <Text style={styles.label}>{t('total')}:</Text>
-        <Text style={styles.value}>{order.total} EGP</Text>
+        <Text style={styles.value}>{order.total} {t('egp')}</Text>
       </View>
 
       <View style={styles.section}>
@@ -56,7 +56,7 @@ const OrderDetailsScreen = () => {
               {t('quantity')}: {product.count}
             </Text>
             <Text style={styles.productText}>
-              {t('subtotal')}: {product.total} EGP
+              {t('subtotal')}: {product.total} {t('egp')}
             </Text>
           </View>
         </View>

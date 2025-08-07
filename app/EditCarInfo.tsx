@@ -111,7 +111,7 @@ export default function EditCarInfoScreen() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={{ marginTop: 10 }}>Loading car info...</Text>
+        <Text style={{ marginTop: 10 }}>{t('loading_car_info')}</Text>
       </View>
     );
   }

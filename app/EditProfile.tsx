@@ -142,7 +142,7 @@ export default function EditProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>Loading profile...</Text>
+        <Text style={{ color: colors.text }}>{t('loading_profile')}</Text>
       </View>
     );
   }
@@ -156,7 +156,7 @@ export default function EditProfileScreen() {
             <Image source={{ uri: profileData?.image || profileImage }} style={styles.profileImage} />
             <TouchableOpacity style={styles.uploadButton} onPress={handleImageUpload}>
               <MaterialIcons name="cloud-upload" size={30} color={colors.tint} />
-              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>Upload</Text>
+              <Text style={[styles.uploadButtonText, { color: colors.tint }]}>{t('upload')}</Text>
             </TouchableOpacity>
           </View>
 

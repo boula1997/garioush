@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useTranslation } from 'react-i18next';
 
 const orders = [
   {
@@ -30,10 +31,11 @@ const orders = [
 export default function MyOrdersScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { t, i18n } = useTranslation();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>      
-      <Text style={[styles.header, { color: colors.tint }]}>My Orders</Text>
+      <Text style={[styles.header, { color: colors.tint }]}>{t('my_orders')}</Text>
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id}

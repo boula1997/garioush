@@ -74,7 +74,7 @@ export default function MyProfileScreen() {
     return (
       <View style={styles.errorContainer}>
         <Text style={[styles.errorText, { color: colors.error }]}>
-          Error fetching profile data: {error}
+        {t('error_fetching_profile')} {error}
         </Text>
       </View>
     );
@@ -92,20 +92,20 @@ export default function MyProfileScreen() {
           {profileData?.fullname || 'No Name'}
         </Text>
         <Text style={[styles.profileSubtitle, { color: colors.tint }]}>
-          User
+        {t('user')}
         </Text>
       </View>
 
       {/* Profile Details */}
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>Email :-</Text>
+          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('email')}</Text>
           <Text style={[styles.detailText, { color: colors.text }]}>
             {profileData?.email || 'Not Provided'}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={[styles.detailTitle, { color: colors.tint }]}>Phone :-</Text>
+          <Text style={[styles.detailTitle, { color: colors.tint }]}>{t('phone')}</Text>
           <Text style={[styles.detailText, { color: colors.text }]}>
             {profileData?.phone || 'Not Provided'}
           </Text>

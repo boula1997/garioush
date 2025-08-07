@@ -1,8 +1,10 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
+
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFoundScreen() {
   return (
@@ -10,15 +12,15 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Oops!' }} />
 
       <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen does not exist.</ThemedText>
+        <ThemedText type="title">{t('not_found')}</ThemedText>
         <Link href="/" style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
+          <ThemedText type="link">{t('go_to_home')}</ThemedText>
         </Link>
       </ThemedView>
     </>
   );
 }
-
+const { t, i18n } = useTranslation();
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -49,7 +49,7 @@ export default function MyCarInfoScreen() {
   if (!carInfo) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text }}>Failed to load car information.</Text>
+        <Text style={{ color: colors.text }}>{t('failed_to_load_car_info')}</Text>
       </View>
     );
   }
@@ -63,7 +63,7 @@ export default function MyCarInfoScreen() {
 
       {/* Car Details */}
       <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-        <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>Car Details</Text>
+        <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>{t('car_details')}</Text>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
         {Object.entries(carInfo).map(([key, value]) => (
