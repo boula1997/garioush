@@ -4,6 +4,8 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+
 
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme();
@@ -22,6 +24,7 @@ export default function EditProfileScreen() {
   );
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const getTokenAndFetchData = async () => {
@@ -159,7 +162,7 @@ export default function EditProfileScreen() {
 
           {/* Editable Profile Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>Edit Profile</Text>
+            <Text style={[styles.profileDetailsTitle, { color: colors.tint }]}>{t("Edit Profile")}</Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TextInput
@@ -192,7 +195,7 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="lock" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Password</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t("Password")}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
@@ -208,7 +211,7 @@ export default function EditProfileScreen() {
             <View style={styles.inputItem}>
               <View style={styles.inputLabelContainer}>
                 <MaterialIcons name="lock" size={20} color={colors.tint} />
-                <Text style={[styles.label, { color: colors.tint }]}>Confirm Password</Text>
+                <Text style={[styles.label, { color: colors.tint }]}>{t("Confirm Password")}</Text>
               </View>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
@@ -222,7 +225,7 @@ export default function EditProfileScreen() {
 
             {/* Save Button */}
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.tint }]} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={styles.saveButtonText}>{t("Save")}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 export default function MyProfileScreen() {
   const [profileData, setProfileData] = useState(null);
@@ -11,6 +12,7 @@ export default function MyProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [token, setToken] = useState(null);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const getTokenAndFetchData = async () => {
