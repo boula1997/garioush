@@ -263,7 +263,7 @@ export default function ProductsScreen() {
                   textAlign: isRTL ? 'right' : 'left'
                 }
               ]}>
-                ${item.price.toFixed(2)}
+                {t("currency")} {item.price.toFixed(2)}
               </ThemedText>
               {item.details?.noOfKilos && (
                 <ThemedText style={{ 

@@ -193,7 +193,7 @@ export default function ProductDetailsScreen() {
               {product.brand ? `${t('by')} ${product.brand}` : ''}
             </Text>
             <Text style={[styles.price, { color: colors.tint }]}>
-              ${product.price.toFixed(2)}
+              {t("currency")} {product.price.toFixed(2)}
             </Text>
           </View>
         </View>
