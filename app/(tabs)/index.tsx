@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import * as Updates from 'expo-updates';
 import '../../i18n';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Index() {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -111,15 +111,18 @@ export default function Index() {
     };
   }, [sound]);
 
-  const playCarSound = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(require('@/assets/car2.mp3'));
-      setSound(sound);
-      await sound.playAsync();
-    } catch (error) {
-      console.error('Error playing sound:', error);
-    }
-  };
+const playCarSound = async () => {
+  try {
+    const soundStatus = await AsyncStorage.getItem('soundStatus');
+    if (soundStatus !== 'on') return; // don't play if muted
+
+    const { sound } = await Audio.Sound.createAsync(require('@/assets/car2.mp3'));
+    setSound(sound);
+    await sound.playAsync();
+  } catch (error) {
+    console.error('Error playing sound:', error);
+  }
+};
 
   const handleServicePress = async (category: string) => {
     await playCarSound();

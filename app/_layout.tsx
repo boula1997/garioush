@@ -12,7 +12,7 @@ import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -24,23 +24,32 @@ export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
 
   // Load sound effect
-  useEffect(() => {
-    async function prepare() {
-      try {
+useEffect(() => {
+  async function prepare() {
+    try {
+      const soundStatus = await AsyncStorage.getItem('soundStatus');
+
+      if (soundStatus === 'on') {
         const { sound: carSound } = await Audio.Sound.createAsync(
           require('../assets/car2.mp3')
         );
         await carSound.playAsync();
         await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setAppIsReady(true);
+        await carSound.unloadAsync();
+      } else {
+        // If sound is off, just delay for 2s without playing
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
+    } catch (e) {
+      console.warn('Startup sound error:', e);
+    } finally {
+      setAppIsReady(true);
     }
+  }
 
-    prepare();
-  }, []);
+  prepare();
+}, []);
+
 
   useEffect(() => {
     if (loaded && appIsReady) {
