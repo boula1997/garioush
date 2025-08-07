@@ -15,10 +15,12 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 export default function EditCarInfoScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { t, i18n } = useTranslation();
 
   const [carData, setCarData] = useState({
     carBrand: '',
@@ -143,7 +145,7 @@ export default function EditCarInfoScreen() {
           {/* Editable Car Details */}
           <View style={[styles.detailsContainer, { backgroundColor: colors.cardBackground }]}>
             <Text style={[styles.carDetailsTitle, { color: colors.tint }]}>
-              Edit Car Details
+              {t("Edit Car Details")}
             </Text>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
@@ -167,7 +169,7 @@ export default function EditCarInfoScreen() {
               style={[styles.saveButton, { backgroundColor: colors.tint }]}
               onPress={handleSave}
             >
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={styles.saveButtonText}>{t("Save")}</Text>
             </TouchableOpacity>
           </View>
         </View>

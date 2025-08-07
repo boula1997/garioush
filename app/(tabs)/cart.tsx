@@ -157,7 +157,7 @@ export default function CartScreen() {
           {item.title}
         </Text>
         <Text style={[styles.price, { color: colors.tint }]}>
-          ${item.price}
+          {t("currency")} {item.price}
         </Text>
       </View>
       <View
@@ -214,7 +214,7 @@ export default function CartScreen() {
       >
         <Text style={[styles.totalText, { color: colors.text }]}>
           {t('Subtotal')}{' '}
-          <Text style={{ color: colors.tint }}>${total.toFixed(2)}</Text>
+          <Text style={{ color: colors.tint }}>{t('currency')} {total.toFixed(2)}</Text>
         </Text>
         <TouchableOpacity
           style={[styles.checkoutButton, { backgroundColor: colors.tint }]}
